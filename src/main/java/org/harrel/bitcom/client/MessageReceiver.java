@@ -1,6 +1,7 @@
 package org.harrel.bitcom.client;
 
 import org.harrel.bitcom.model.msg.Header;
+import org.harrel.bitcom.model.msg.Message;
 import org.harrel.bitcom.model.msg.payload.Payload;
 import org.harrel.bitcom.serial.HeaderSerializer;
 import org.harrel.bitcom.serial.SerializerFactory;
@@ -20,11 +21,13 @@ public class MessageReceiver {
     private final SerializerFactory serializerFactory = new SerializerFactory();
     private final AtomicBoolean stopped = new AtomicBoolean(true);
     private final InputStream in;
+    private final Listeners listeners;
 
     private Thread listeningThread;
 
-    public MessageReceiver(InputStream in) {
+    public MessageReceiver(InputStream in, Listeners listeners) {
         this.in = in;
+        this.listeners = listeners;
     }
 
     public void stop() {
@@ -56,7 +59,8 @@ public class MessageReceiver {
                 PayloadSerializer<?> payloadSerializer = serializerFactory.getPayloadSerializer(header.command());
                 Payload payload = payloadSerializer.deserialize(in);
                 // todo check for payload length + checksum
-                logger.info(payload.toString());
+                listeners.notify(new Message<>(header, payload));
+
             }
         } catch (InterruptedIOException e) {
             logger.info("Listening thread interrupted. Stopping...");

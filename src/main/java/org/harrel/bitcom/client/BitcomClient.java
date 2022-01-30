@@ -4,6 +4,7 @@ import org.harrel.bitcom.config.NetworkConfiguration;
 import org.harrel.bitcom.config.StandardConfiguration;
 import org.harrel.bitcom.model.msg.Header;
 import org.harrel.bitcom.model.msg.Message;
+import org.harrel.bitcom.model.msg.payload.Command;
 import org.harrel.bitcom.model.msg.payload.Payload;
 import org.harrel.bitcom.serial.HeaderSerializer;
 import org.harrel.bitcom.serial.SerializerFactory;
@@ -19,6 +20,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.LinkedList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -28,6 +30,7 @@ public class BitcomClient implements AutoCloseable {
     private final SerializerFactory serializerFactory = new SerializerFactory();
     private final InetAddress address;
     private final NetworkConfiguration netConfig;
+    private final Listeners listeners = new Listeners();
 
     private Socket socket;
     private MessageReceiver receiver;
@@ -51,7 +54,7 @@ public class BitcomClient implements AutoCloseable {
 
     public void connect() throws IOException {
         socket = new Socket(address, netConfig.getPort());
-        receiver = new MessageReceiver(socket.getInputStream());
+        receiver = new MessageReceiver(socket.getInputStream(), listeners);
         logger.info("Established socket connection to {}:{}", address.getHostAddress(), netConfig.getPort());
     }
 
@@ -59,6 +62,14 @@ public class BitcomClient implements AutoCloseable {
     public void close() throws IOException {
         receiver.stop();
         socket.close();
+    }
+
+    public <T extends Payload> void addListener(Class<T> payloadClass, MessageListener<T> listener) {
+        listeners.addListener(payloadClass, listener);
+    }
+
+    public void addGlobalListener(MessageListener<Payload> listener) {
+        listeners.addGlobalListener(listener);
     }
 
     public <T extends Payload> CompletableFuture<Message<T>> sendMessage(T payload) {
