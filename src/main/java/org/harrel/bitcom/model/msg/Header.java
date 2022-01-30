@@ -1,9 +1,9 @@
 package org.harrel.bitcom.model.msg;
 
-import org.harrel.bitcom.model.msg.payload.PayloadType;
+import org.harrel.bitcom.model.msg.payload.Command;
 
 public record Header(int magicValue,
-                     PayloadType payloadType,
+                     Command command,
                      int length,
                      int checksum) {
 }

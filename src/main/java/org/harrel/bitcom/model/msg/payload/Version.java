@@ -2,8 +2,6 @@ package org.harrel.bitcom.model.msg.payload;
 
 import org.harrel.bitcom.model.NetworkAddress;
 
-import java.io.OutputStream;
-
 public record Version(int version,
                       long services,
                       long timestamp,
@@ -16,7 +14,7 @@ public record Version(int version,
         implements Payload {
 
     @Override
-    public PayloadType getPayloadType() {
-        return PayloadType.version;
+    public Command getCommand() {
+        return Command.version;
     }
 }

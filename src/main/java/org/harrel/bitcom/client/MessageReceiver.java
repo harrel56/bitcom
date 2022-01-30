@@ -1,8 +1,10 @@
 package org.harrel.bitcom.client;
 
 import org.harrel.bitcom.model.msg.Header;
+import org.harrel.bitcom.model.msg.payload.Payload;
 import org.harrel.bitcom.serial.HeaderSerializer;
 import org.harrel.bitcom.serial.SerializerFactory;
+import org.harrel.bitcom.serial.payload.PayloadSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +52,11 @@ public class MessageReceiver {
             while (!stopped.get()) {
                 byte[] headerBytes = in.readNBytes(HeaderSerializer.HEADER_SIZE);
                 Header header = serializerFactory.getHeaderSerializer().deserialize(new ByteArrayInputStream(headerBytes));
-                logger.info(header.toString());
+
+                PayloadSerializer<?> payloadSerializer = serializerFactory.getPayloadSerializer(header.command());
+                Payload payload = payloadSerializer.deserialize(in);
+                // todo check for payload length + checksum
+                logger.info(payload.toString());
             }
         } catch (InterruptedIOException e) {
             logger.info("Listening thread interrupted. Stopping...");

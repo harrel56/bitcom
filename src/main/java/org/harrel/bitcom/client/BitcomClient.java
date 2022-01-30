@@ -62,7 +62,7 @@ public class BitcomClient implements AutoCloseable {
     }
 
     public <T extends Payload> CompletableFuture<Message<T>> sendMessage(T payload) {
-        logger.info("Sending new message of type={}", payload.getPayloadType());
+        logger.info("Sending new message of type={}", payload.getCommand());
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return sendMessageInternal(payload);
@@ -91,6 +91,6 @@ public class BitcomClient implements AutoCloseable {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] payloadHash = digest.digest(digest.digest(payloadBytes));
         int checksum = ByteBuffer.wrap(payloadHash).getInt();
-        return new Header(netConfig.getMagicValue(), payload.getPayloadType(), payloadBytes.length, checksum);
+        return new Header(netConfig.getMagicValue(), payload.getCommand(), payloadBytes.length, checksum);
     }
 }

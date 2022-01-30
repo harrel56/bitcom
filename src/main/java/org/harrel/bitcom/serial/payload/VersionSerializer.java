@@ -1,8 +1,10 @@
 package org.harrel.bitcom.serial.payload;
 
+import org.harrel.bitcom.model.NetworkAddress;
 import org.harrel.bitcom.model.msg.payload.Version;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 public class VersionSerializer extends PayloadSerializer<Version> {
@@ -23,5 +25,19 @@ public class VersionSerializer extends PayloadSerializer<Version> {
         writeVarString(version.userAgent(), out);
         writeInt32LE(version.blockHeight(), out);
         out.write(version.relay() ? 0x01 : 0x00);
+    }
+
+    @Override
+    public Version deserialize(InputStream in) throws IOException {
+        int version = readInt32LE(in.readNBytes(4));
+        long services = readInt64LE(in.readNBytes(8));
+        long timestamp = readInt64LE(in.readNBytes(8));
+        NetworkAddress receiver = readNetworkAddressWithoutTime(-1, in);
+        NetworkAddress transmitter = readNetworkAddressWithoutTime(-1, in);
+        long nonce = readInt64LE(in.readNBytes(8));
+        String userAgent = readVarString(in);
+        int blockHeight = readInt32LE(in.readNBytes(4));
+        boolean relay = in.read() != 0x00;
+        return new Version(version, services, timestamp, receiver, transmitter, nonce, userAgent, blockHeight, relay);
     }
 }
