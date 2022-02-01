@@ -77,11 +77,19 @@ class MessageReceiverTest {
 
         listeners.addListener(Version.class, v -> {
             try {
-                logger.info("in");
+                logger.info("in 1");
                 new HeaderSerializer().serialize(new Header(1, Command.version, 2, 3), out);
                 new SerializerFactory().getPayloadSerializer(version).serialize(version, out);
+                logger.info("out 1");
             } catch (Exception e) {}
         });
+//        listeners.addListener(Version.class, v -> {
+//            try {
+//                logger.info("in 2");
+//                new HeaderSerializer().serialize(new Header(1, Command.version, 2, 3), out);
+//                new SerializerFactory().getPayloadSerializer(version).serialize(version, out);
+//            } catch (Exception e) {}
+//        });
         new SerializerFactory().getPayloadSerializer(version).serialize(version, out);
 
         Thread.sleep(60000);

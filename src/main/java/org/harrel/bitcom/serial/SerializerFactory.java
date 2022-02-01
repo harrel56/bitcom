@@ -2,9 +2,7 @@ package org.harrel.bitcom.serial;
 
 import org.harrel.bitcom.model.msg.payload.Command;
 import org.harrel.bitcom.model.msg.payload.Payload;
-import org.harrel.bitcom.serial.payload.PayloadSerializer;
-import org.harrel.bitcom.serial.payload.PingSerializer;
-import org.harrel.bitcom.serial.payload.VersionSerializer;
+import org.harrel.bitcom.serial.payload.*;
 
 public class SerializerFactory {
 
@@ -20,7 +18,9 @@ public class SerializerFactory {
     public PayloadSerializer<?> getPayloadSerializer(Command cmd) {
         return switch (cmd) {
             case version -> new VersionSerializer();
+            case verack -> new VerackSerializer();
             case ping -> new PingSerializer();
+            case pong -> new PongSerializer();
         };
     }
 }

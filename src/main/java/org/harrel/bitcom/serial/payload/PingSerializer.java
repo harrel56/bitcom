@@ -14,12 +14,12 @@ public class PingSerializer extends PayloadSerializer<Ping> {
     }
 
     @Override
-    public void serialize(Ping payload, OutputStream out) {
-        // todo
+    public void serialize(Ping payload, OutputStream out) throws IOException {
+        writeInt64LE(payload.nonce(), out);
     }
 
     @Override
     public Ping deserialize(InputStream in) throws IOException {
-        return null;
+        return new Ping(readInt64LE(in.readNBytes(8)));
     }
 }

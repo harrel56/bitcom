@@ -4,7 +4,6 @@ import org.harrel.bitcom.config.NetworkConfiguration;
 import org.harrel.bitcom.config.StandardConfiguration;
 import org.harrel.bitcom.model.msg.Header;
 import org.harrel.bitcom.model.msg.Message;
-import org.harrel.bitcom.model.msg.payload.Command;
 import org.harrel.bitcom.model.msg.payload.Payload;
 import org.harrel.bitcom.serial.HeaderSerializer;
 import org.harrel.bitcom.serial.SerializerFactory;
@@ -17,10 +16,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.LinkedList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -55,6 +50,7 @@ public class BitcomClient implements AutoCloseable {
     public void connect() throws IOException {
         socket = new Socket(address, netConfig.getPort());
         receiver = new MessageReceiver(socket.getInputStream(), listeners);
+        receiver.startListening();
         logger.info("Established socket connection to {}:{}", address.getHostAddress(), netConfig.getPort());
     }
 
@@ -77,13 +73,13 @@ public class BitcomClient implements AutoCloseable {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return sendMessageInternal(payload);
-            } catch (IOException | NoSuchAlgorithmException e) {
+            } catch (IOException e) {
                 throw new CompletionException(e);
             }
         });
     }
 
-    private synchronized <T extends Payload> Message<T> sendMessageInternal(T payload) throws IOException, NoSuchAlgorithmException {
+    private synchronized <T extends Payload> Message<T> sendMessageInternal(T payload) throws IOException {
         PayloadSerializer<T> payloadSerializer = serializerFactory.getPayloadSerializer(payload);
         ByteArrayOutputStream payloadOut = new ByteArrayOutputStream(payloadSerializer.getExpectedByteSize());
         payloadSerializer.serialize(payload, payloadOut);
@@ -95,13 +91,12 @@ public class BitcomClient implements AutoCloseable {
 
         out.write(payloadBytes);
         socket.getOutputStream().write(out.toByteArray());
+        logger.info("Sent message of type={}", payload.getCommand());
         return new Message<>(header, payload);
     }
 
-    private Header createHeader(Payload payload, byte[] payloadBytes) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] payloadHash = digest.digest(digest.digest(payloadBytes));
-        int checksum = ByteBuffer.wrap(payloadHash).getInt();
+    private Header createHeader(Payload payload, byte[] payloadBytes) {
+        int checksum = Hashes.getPayloadChecksum(payloadBytes);
         return new Header(netConfig.getMagicValue(), payload.getCommand(), payloadBytes.length, checksum);
     }
 }

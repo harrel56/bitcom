@@ -12,6 +12,9 @@ import java.nio.charset.StandardCharsets;
 
 public abstract class Serializer<T> {
 
+    protected static final int VAR_INT_SIZE = 9;
+    protected static final int VAR_STRING_SIZE = 30;
+
     public abstract void serialize(T payload, OutputStream out) throws IOException;
 
     public abstract T deserialize(InputStream in) throws IOException;

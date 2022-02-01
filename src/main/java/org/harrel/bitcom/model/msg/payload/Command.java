@@ -5,9 +5,9 @@ import java.util.Map;
 
 public enum Command {
     version(Version.class),
-    //verack(Version.class),
-//    pong(Version.class),
-    ping(Ping.class);
+    verack(Verack.class),
+    ping(Ping.class),
+    pong(Pong.class);
 
     private static final Map<Class<?>, Command> classMap = new HashMap<>();
     static {
