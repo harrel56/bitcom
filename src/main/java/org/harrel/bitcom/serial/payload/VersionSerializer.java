@@ -37,14 +37,14 @@ public class VersionSerializer extends PayloadSerializer<Version> {
 
     @Override
     public Version deserialize(InputStream in) throws IOException {
-        int version = readInt32LE(in.readNBytes(4));
-        long services = readInt64LE(in.readNBytes(8));
-        long timestamp = readInt64LE(in.readNBytes(8));
+        int version = readInt32LE(in);
+        long services = readInt64LE(in);
+        long timestamp = readInt64LE(in);
         NetworkAddress receiver = readNetworkAddressWithoutTime(-1, in);
         NetworkAddress transmitter = readNetworkAddressWithoutTime(-1, in);
-        long nonce = readInt64LE(in.readNBytes(8));
+        long nonce = readInt64LE(in);
         String userAgent = readVarString(in);
-        int blockHeight = readInt32LE(in.readNBytes(4));
+        int blockHeight = readInt32LE(in);
         boolean relay = in.read() != 0x00;
         return new Version(version, services, timestamp, receiver, transmitter, nonce, userAgent, blockHeight, relay);
     }

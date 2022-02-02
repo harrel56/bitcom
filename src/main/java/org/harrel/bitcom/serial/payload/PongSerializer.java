@@ -14,7 +14,7 @@ public class PongSerializer extends PayloadSerializer<Pong> {
 
     @Override
     public Pong deserialize(InputStream in) throws IOException {
-        return new Pong(readInt64LE(in.readNBytes(8)));
+        return new Pong(readInt64LE(in));
     }
 
     @Override

@@ -24,10 +24,10 @@ public class HeaderSerializer extends Serializer<Header> {
 
     @Override
     public Header deserialize(InputStream in) throws IOException {
-        int magicValue = readInt32LE(in.readNBytes(4));
-        Command command = readCommand(in.readNBytes(12));
-        int length = readInt32LE(in.readNBytes(4));
-        int checksum = readInt32BE(in.readNBytes(4));
+        int magicValue = readInt32LE(in);
+        Command command = readCommand(in);
+        int length = readInt32LE(in);
+        int checksum = readInt32BE(in);
         return new Header(magicValue, command, length, checksum);
     }
 
@@ -36,7 +36,8 @@ public class HeaderSerializer extends Serializer<Header> {
         out.write(Arrays.copyOf(commandBytes, COMMAND_SIZE));
     }
 
-    private Command readCommand(byte[] data) {
+    private Command readCommand(InputStream in) throws IOException {
+        byte[] data = in.readNBytes(12);
         int size;
         for (size = 0; size < data.length; size++) {
             if (data[size] == 0x0) {

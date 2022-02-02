@@ -20,6 +20,6 @@ public class PingSerializer extends PayloadSerializer<Ping> {
 
     @Override
     public Ping deserialize(InputStream in) throws IOException {
-        return new Ping(readInt64LE(in.readNBytes(8)));
+        return new Ping(readInt64LE(in));
     }
 }

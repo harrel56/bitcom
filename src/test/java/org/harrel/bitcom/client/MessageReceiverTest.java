@@ -7,6 +7,7 @@ import org.harrel.bitcom.model.msg.payload.Version;
 import org.harrel.bitcom.serial.HeaderSerializer;
 import org.harrel.bitcom.serial.SerializerFactory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,7 @@ class MessageReceiverTest {
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
+    @Disabled
     @Test
     void receiverTest() throws Exception {
 

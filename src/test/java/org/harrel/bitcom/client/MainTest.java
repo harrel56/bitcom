@@ -5,6 +5,7 @@ import org.harrel.bitcom.model.msg.Message;
 import org.harrel.bitcom.model.msg.payload.Ping;
 import org.harrel.bitcom.model.msg.payload.Verack;
 import org.harrel.bitcom.model.msg.payload.Version;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 
 class MainTest {
 
+    @Disabled
     @Test
     void test() throws IOException, InterruptedException {
         BitcomClient client = new BitcomClient("81.169.184.84");

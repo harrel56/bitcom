@@ -1,35 +1,29 @@
 package org.harrel.bitcom.client;
 
+import org.harrel.bitcom.config.StandardConfiguration;
 import org.harrel.bitcom.model.NetworkAddress;
-import org.harrel.bitcom.model.msg.Message;
 import org.harrel.bitcom.model.msg.payload.Version;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 class BitcomClientTest {
 
-    Logger log = LoggerFactory.getLogger(getClass());
-
     @Test
     void connect() throws IOException {
-        BitcomClient client = new BitcomClient("seed.bitcoin.sipa.be");
+        BitcomClient client = new BitcomClient(StandardConfiguration.MAIN.getDnsSeeders()[0], StandardConfiguration.MAIN);
         Assertions.assertDoesNotThrow(client::connect);
     }
 
     @Test
-    void sendMessage() throws IOException, ExecutionException, InterruptedException {
-        BitcomClient client = new BitcomClient("seed.bitcoin.sipa.be");
+    void sendMessage() throws IOException {
+        BitcomClient client = new BitcomClient(StandardConfiguration.MAIN.getDnsSeeders()[0], StandardConfiguration.MAIN);
         client.connect();
 
-        CompletableFuture<Message<Version>> future = client.sendMessage(getVersionPayload());
+        var future = client.sendMessage(getVersionPayload());
         Assertions.assertDoesNotThrow(() -> future.get());
     }
 

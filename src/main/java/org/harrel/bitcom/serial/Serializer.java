@@ -66,12 +66,12 @@ public abstract class Serializer<T> {
     }
 
     protected void writeVarInt(long val, OutputStream out) throws IOException {
-        if (val < 0xFD) {
+        if (val >= 0x0 && val < 0xFD) {
             out.write((int) val);
-        } else if (val < 0xFFFF) {
+        } else if (val >= 0xFD && val < 0xFFFF) {
             out.write(0xFD);
             writeInt16LE((int) val, out);
-        } else if (val < 0xFFFF_FFFFL) {
+        } else if (val >= 0xFFFF && val < 0xFFFF_FFFFL) {
             out.write(0xFE);
             writeInt32LE((int) val, out);
         } else {
@@ -112,19 +112,22 @@ public abstract class Serializer<T> {
         writeInt16BE(address.port(), out);
     }
 
-    protected int readInt16LE(byte[] data) {
+    protected int readInt16LE(InputStream in) throws IOException {
+        byte[] data = in.readNBytes(2);
         int val = data[0] & 0xFF;
         val |= (data[1] & 0xFF) << 8;
         return val;
     }
 
-    protected int readInt16BE(byte[] data) {
+    protected int readInt16BE(InputStream in) throws IOException {
+        byte[] data = in.readNBytes(2);
         int val = (data[0] & 0xFF) << 8;
         val |= data[1] & 0xFF;
         return val;
     }
 
-    protected int readInt32LE(byte[] data) {
+    protected int readInt32LE(InputStream in) throws IOException {
+        byte[] data = in.readNBytes(4);
         int val = data[0] & 0xFF;
         val |= (data[1] & 0xFF) << 8;
         val |= (data[2] & 0xFF) << 16;
@@ -132,7 +135,8 @@ public abstract class Serializer<T> {
         return val;
     }
 
-    protected int readInt32BE(byte[] data) {
+    protected int readInt32BE(InputStream in) throws IOException {
+        byte[] data = in.readNBytes(4);
         int val = (data[0] & 0xFF) << 24;
         val |= (data[1] & 0xFF)<< 16;
         val |= (data[2] & 0xFF)<< 8;
@@ -140,7 +144,8 @@ public abstract class Serializer<T> {
         return val;
     }
 
-    protected long readInt64LE(byte[] data) {
+    protected long readInt64LE(InputStream in) throws IOException {
+        byte[] data = in.readNBytes(8);
         long val = data[0] & 0xFF;
         val |= (data[1] & 0xFF) << 8;
         val |= (data[2] & 0xFF) << 16;
@@ -152,7 +157,8 @@ public abstract class Serializer<T> {
         return val;
     }
 
-    protected long readInt64BE(byte[] data) {
+    protected long readInt64BE(InputStream in) throws IOException {
+        byte[] data = in.readNBytes(8);
         long val = (long) (data[0] & 0xFF) << 56;
         val |= (long) (data[1] & 0xFF) << 48;
         val |= (long) (data[2] & 0xFF) << 40;
@@ -160,7 +166,7 @@ public abstract class Serializer<T> {
         val |= (long) (data[4] & 0xFF) << 24;
         val |= (data[5] & 0xFF) << 16;
         val |= (data[6] & 0xFF) << 8;
-        val |= data[7];
+        val |= data[7]  & 0xFF;
         return val;
     }
 
@@ -169,11 +175,11 @@ public abstract class Serializer<T> {
         if (indicator < 0xFD) {
             return indicator;
         } else if (indicator == 0xFD) {
-            return readInt16LE(in.readNBytes(2));
+            return readInt16LE(in);
         } else if (indicator == 0xFE) {
-            return readInt32LE(in.readNBytes(4));
+            return readInt32LE(in);
         } else {
-            return readInt64LE(in.readNBytes(8));
+            return readInt64LE(in);
         }
     }
 
@@ -183,14 +189,14 @@ public abstract class Serializer<T> {
     }
 
     protected NetworkAddress readNetworkAddress(InputStream in) throws IOException {
-        int time = readInt32LE(in.readNBytes(4));
+        int time = readInt32LE(in);
         return readNetworkAddressWithoutTime(time, in);
     }
 
     protected NetworkAddress readNetworkAddressWithoutTime(int time, InputStream in) throws IOException {
-        long services = readInt64LE(in.readNBytes(8));
+        long services = readInt64LE(in);
         InetAddress address = InetAddress.getByAddress(in.readNBytes(16));
-        int port = readInt16BE(in.readNBytes(2));
+        int port = readInt16BE(in);
         return new NetworkAddress(time, services, address, port);
     }
 }
