@@ -4,5 +4,5 @@ import org.harrel.bitcom.model.msg.payload.Payload;
 
 @FunctionalInterface
 public interface MessageListener<T extends Payload> {
-    void onMessageReceived(T msg);
+    void onMessageReceived(NetworkClient target, T msg);
 }

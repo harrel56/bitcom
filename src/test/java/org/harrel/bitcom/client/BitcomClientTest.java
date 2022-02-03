@@ -13,15 +13,18 @@ import java.net.UnknownHostException;
 class BitcomClientTest {
 
     @Test
-    void connect() throws IOException {
-        BitcomClient client = new BitcomClient(StandardConfiguration.MAIN.getDnsSeeders()[0], StandardConfiguration.MAIN);
-        Assertions.assertDoesNotThrow(client::connect);
+    void build() throws IOException {
+        BitcomClient client = BitcomClient.builder().withAddress(StandardConfiguration.MAIN.getDnsSeeders()[0])
+                .withNetworkConfiguration(StandardConfiguration.MAIN)
+                .buildAndConnect();
+        Assertions.assertNotNull(client);
     }
 
     @Test
     void sendMessage() throws IOException {
-        BitcomClient client = new BitcomClient(StandardConfiguration.MAIN.getDnsSeeders()[0], StandardConfiguration.MAIN);
-        client.connect();
+        BitcomClient client = BitcomClient.builder()
+                .withAddress(StandardConfiguration.MAIN.getDnsSeeders()[0])
+                .buildAndConnect();
 
         var future = client.sendMessage(getVersionPayload());
         Assertions.assertDoesNotThrow(() -> future.get());

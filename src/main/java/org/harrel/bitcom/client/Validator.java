@@ -5,7 +5,7 @@ import org.harrel.bitcom.model.msg.Header;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Validator {
+class Validator {
 
     public List<String> validateMessageIntegrity(Header header, byte[] payload) {
         List<String> res = new ArrayList<>();

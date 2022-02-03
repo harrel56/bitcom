@@ -26,7 +26,7 @@ public class VersionSerializer extends PayloadSerializer<Version> {
     public void serialize(Version version, OutputStream out) throws IOException {
         writeInt32LE(version.version(), out);
         writeInt64LE(version.services(), out);
-        writeInt64LE(System.currentTimeMillis() / 1000, out);
+        writeInt64LE(version.timestamp(), out);
         writeNetworkAddressWithoutTime(version.receiver(), out);
         writeNetworkAddressWithoutTime(version.transmitter(), out);
         writeInt64LE(version.nonce(), out);
@@ -40,8 +40,8 @@ public class VersionSerializer extends PayloadSerializer<Version> {
         int version = readInt32LE(in);
         long services = readInt64LE(in);
         long timestamp = readInt64LE(in);
-        NetworkAddress receiver = readNetworkAddressWithoutTime(-1, in);
-        NetworkAddress transmitter = readNetworkAddressWithoutTime(-1, in);
+        NetworkAddress receiver = readNetworkAddressWithoutTime(0, in);
+        NetworkAddress transmitter = readNetworkAddressWithoutTime(0, in);
         long nonce = readInt64LE(in);
         String userAgent = readVarString(in);
         int blockHeight = readInt32LE(in);

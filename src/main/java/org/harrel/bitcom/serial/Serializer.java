@@ -86,7 +86,7 @@ public abstract class Serializer<T> {
     }
 
     protected void writeNetworkAddress(NetworkAddress address, OutputStream out) throws IOException {
-        writeInt32LE((int) (System.currentTimeMillis() / 1000), out);
+        writeInt32LE(address.time(), out);
         writeNetworkAddressWithoutTime(address, out);
     }
 

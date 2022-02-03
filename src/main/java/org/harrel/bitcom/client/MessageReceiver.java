@@ -12,47 +12,32 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public class MessageReceiver {
+class MessageReceiver implements AutoCloseable {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final SerializerFactory serializerFactory = new SerializerFactory();
     private final Validator validator = new Validator();
-    private final AtomicBoolean stopped = new AtomicBoolean(true);
     private final InputStream in;
     private final Listeners listeners;
 
-    private Thread listeningThread;
+    private final Thread listeningThread;
 
-    public MessageReceiver(InputStream in, Listeners listeners) {
+    MessageReceiver(InputStream in, Listeners listeners) {
         this.in = in;
         this.listeners = listeners;
+        this.listeningThread = new Thread(this::readLoop, getClass().getSimpleName() + "@" + hashCode() + ":listening-thread");
+        this.listeningThread.start();
     }
 
-    public void stop() {
-        if (!stopped.compareAndSet(false, true)) {
-            throw new IllegalStateException("Already stopped");
-        }
+    @Override
+    public synchronized void close() {
         listeningThread.interrupt();
-    }
-
-    public void startListening() {
-        if (!stopped.compareAndSet(true, false)) {
-            throw new IllegalStateException("Already listening");
-        }
-        listeningThread = new Thread(this::readLoop, getClass().getSimpleName() + "@" + hashCode() + ":listening-thread");
-        listeningThread.start();
     }
 
     private void readLoop() {
         try {
-            /* Can be interrupted before entering try-catch */
-            if (Thread.interrupted()) {
-                throw new InterruptedException();
-            }
-
-            while (!stopped.get()) {
+            while (!Thread.interrupted()) {
                 Header header = readHeader(in);
                 if (header == null) {
                     continue;
@@ -69,19 +54,15 @@ public class MessageReceiver {
                     logger.warn("Ignoring malformed message. Reason:");
                     errors.forEach(logger::warn);
                 }
-
             }
         } catch (InterruptedIOException e) {
-            logger.info("Listening thread interrupted. Stopping...");
+            logger.debug("Listening thread interrupted. Stopping...");
             Thread.currentThread().interrupt();
             try {
                 in.close();
             } catch (IOException ioe) { /* close silently */}
         } catch (IOException e) {
             logger.error("Exception occurred in listening thread", e);
-        } catch (InterruptedException e) {
-            logger.info("Listening thread interrupted. Stopping...");
-            Thread.currentThread().interrupt();
         }
     }
 

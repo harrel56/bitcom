@@ -5,38 +5,39 @@ import org.harrel.bitcom.model.msg.payload.Command;
 import org.harrel.bitcom.model.msg.payload.Payload;
 import org.slf4j.LoggerFactory;
 
-import java.util.EnumMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-public class Listeners {
+class Listeners {
 
-    private final List<MessageListener<Payload>> globalListeners = new LinkedList<>();
-    private final Map<Command, List<MessageListener<? extends Payload>>> specificListeners = new EnumMap<>(Command.class);
-    private final ThreadPoolExecutor pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+    private final NetworkClient target;
+    private final List<MessageListener<Payload>> globalListeners;
+    private final Map<Command, List<MessageListener<? extends Payload>>> specificListeners;
+    private final ThreadPoolExecutor pool;
 
-    public <T extends Payload> void addListener(Class<T> payloadClass, MessageListener<T> listener) {
-        specificListeners.computeIfAbsent(Command.forClass(payloadClass), k -> new LinkedList<>()).add(listener);
+    static Builder builder() {
+        return new Builder();
     }
 
-    public void addGlobalListener(MessageListener<Payload> listener) {
-        globalListeners.add(listener);
+    private Listeners(NetworkClient target, List<MessageListener<Payload>> globalListeners, Map<Command, List<MessageListener<? extends Payload>>> specificListeners) {
+        this.target = target;
+        this.globalListeners = globalListeners;
+        this.specificListeners = specificListeners;
+        this.pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
     }
 
-    public void notify(Message<Payload> msg) {
+    void notify(Message<Payload> msg) {
         LoggerFactory.getLogger(getClass()).info("executing");
         pool.execute(() -> {
             Command cmd = msg.payload().getCommand();
-            List<MessageListener<? extends Payload>> list = specificListeners.computeIfAbsent(cmd, k -> new LinkedList<>());
+            List<MessageListener<? extends Payload>> list = specificListeners.computeIfAbsent(cmd, k -> List.of());
             for (MessageListener<? extends Payload> listener : list) {
-                listener.onMessageReceived(genericCast(msg.payload()));
+                listener.onMessageReceived(target, genericCast(msg.payload()));
             }
             if (list.isEmpty()) {
                 for (MessageListener<Payload> globalListener : globalListeners) {
-                    globalListener.onMessageReceived(genericCast(msg.payload()));
+                    globalListener.onMessageReceived(target, genericCast(msg.payload()));
                 }
             }
         });
@@ -45,6 +46,37 @@ public class Listeners {
     @SuppressWarnings("unchecked")
     private <T> T genericCast(Payload payload) {
         return (T) payload;
+    }
+
+    static class Builder {
+        private NetworkClient target;
+        private final List<MessageListener<Payload>> globalListeners = new LinkedList<>();
+        private final Map<Command, List<MessageListener<? extends Payload>>> specificListeners = new EnumMap<>(Command.class);
+
+        private Builder() {
+        }
+
+        Builder withGlobalListener(MessageListener<Payload> listener) {
+            globalListeners.add(listener);
+            return this;
+        }
+
+        <T extends Payload> Builder withListener(Class<T> payloadClass, MessageListener<T> listener) {
+            specificListeners.computeIfAbsent(Command.forClass(payloadClass), k -> new LinkedList<>()).add(listener);
+            return this;
+        }
+
+        Builder withTarget(NetworkClient target) {
+            this.target = target;
+            return this;
+        }
+
+        Listeners build() {
+            var global = Collections.unmodifiableList(globalListeners);
+            specificListeners.replaceAll((cmd, li) -> Collections.unmodifiableList(li));
+            var specific = Collections.unmodifiableMap(specificListeners);
+            return new Listeners(target, global, specific);
+        }
     }
 
 }
