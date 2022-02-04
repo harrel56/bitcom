@@ -35,17 +35,17 @@ class Listeners {
             Command cmd = msg.payload().getCommand();
             List<MessageListener<? extends Payload>> list = specificListeners.getOrDefault(cmd, List.of());
             for (MessageListener<? extends Payload> listener : list) {
-                listener.onMessageReceived(target, genericCast(msg.payload()));
+                listener.onMessageReceived(target, msgCast(msg));
             }
             for (MessageListener<Payload> globalListener : globalListeners) {
-                globalListener.onMessageReceived(target, genericCast(msg.payload()));
+                globalListener.onMessageReceived(target, msgCast(msg));
             }
         });
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T genericCast(Payload payload) {
-        return (T) payload;
+    private <T extends Payload> Message<T> msgCast(Message<Payload> msg) {
+        return (Message<T>) msg;
     }
 
     static class Builder {

@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class BitcomClient implements NetworkClient {
@@ -33,7 +32,7 @@ public class BitcomClient implements NetworkClient {
         this.address = address;
         this.netConfig = netConfig;
 
-        listenersBuilder.withTarget(new WrappedClient(this));
+        listenersBuilder.withTarget(this);
         this.socket = new Socket(address, netConfig.getPort());
         socket.setSoTimeout(maxTimePerMessage);
         this.sender = new MessageSender(socket.getOutputStream(), netConfig);
@@ -45,6 +44,9 @@ public class BitcomClient implements NetworkClient {
     public <T extends Payload> CompletableFuture<Message<T>> sendMessage(T payload) {
         if (socket.isClosed()) {
             throw new IllegalStateException("Connection is closed");
+        }
+        if (payload == null) {
+            throw new IllegalArgumentException("Payload was null");
         }
         return sender.sendMessage(payload);
     }
@@ -111,25 +113,6 @@ public class BitcomClient implements NetworkClient {
                 address = InetAddress.getLocalHost();
             }
             return new BitcomClient(address, netConfig, listenersBuilder, maxTimePerMessage);
-        }
-    }
-
-    static class WrappedClient implements NetworkClient {
-        private final NetworkClient delegate;
-
-        public WrappedClient(NetworkClient delegate) {
-            Objects.requireNonNull(delegate);
-            this.delegate = delegate;
-        }
-
-        @Override
-        public <T extends Payload> CompletableFuture<Message<T>> sendMessage(T payload) {
-            return delegate.sendMessage(payload);
-        }
-
-        @Override
-        public void close() {
-            throw new UnsupportedOperationException("Closing client in listener code is not supported");
         }
     }
 }

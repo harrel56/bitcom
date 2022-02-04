@@ -10,8 +10,8 @@ class Validator {
                     .formatted(header.length(), payload.length));
         }
         if (header.checksum() != Hashes.getPayloadChecksum(payload)) {
-            throw new MessageIntegrityException("Checksum declared in header was not correct. checksum=%d expected=%d"
-                    .formatted(header.checksum(), Hashes.getPayloadChecksum(payload)));
+            throw new MessageIntegrityException("Checksum declared in header was not correct. checksum=0x%s expected=0x%s"
+                    .formatted(Integer.toHexString(header.checksum()), Integer.toHexString(Hashes.getPayloadChecksum(payload))));
         }
     }
 }

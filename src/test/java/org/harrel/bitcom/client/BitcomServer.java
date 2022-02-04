@@ -23,6 +23,11 @@ public class BitcomServer {
         });
     }
 
+    public void close() throws IOException {
+        socket.close();
+        server.close();
+    }
+
     public void send(byte[] data) throws IOException {
         socket.getOutputStream().write(data);
     }
