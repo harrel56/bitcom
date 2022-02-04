@@ -28,23 +28,17 @@ public class BitcomClient implements NetworkClient {
         return new Builder();
     }
 
-    private BitcomClient(InetAddress address, NetworkConfiguration netConfig, Listeners.Builder listenersBuilder) throws IOException {
+    private BitcomClient(InetAddress address, NetworkConfiguration netConfig,
+                         Listeners.Builder listenersBuilder, int maxTimePerMessage) throws IOException {
         this.address = address;
         this.netConfig = netConfig;
 
         listenersBuilder.withTarget(new WrappedClient(this));
         this.socket = new Socket(address, netConfig.getPort());
+        socket.setSoTimeout(maxTimePerMessage);
         this.sender = new MessageSender(socket.getOutputStream(), netConfig);
-        this.receiver = new MessageReceiver(socket.getInputStream(), listenersBuilder.build());
+        this.receiver = new MessageReceiver(socket.getInputStream(), netConfig, listenersBuilder.build());
         logger.info("Established socket connection to {}:{}", address.getHostAddress(), netConfig.getPort());
-    }
-
-    public InetAddress getAddress() {
-        return address;
-    }
-
-    public NetworkConfiguration getNetworkConfiguration() {
-        return netConfig;
     }
 
     @Override
@@ -57,9 +51,23 @@ public class BitcomClient implements NetworkClient {
 
     @Override
     public synchronized void close() throws IOException {
+        if (!socket.isClosed()) {
+            logger.info("Closed socket connection to {}:{}", address.getHostAddress(), netConfig.getPort());
+        }
         receiver.close();
         socket.close();
-        logger.info("Closed socket connection to {}:{}", address.getHostAddress(), netConfig.getPort());
+    }
+
+    public boolean isClosed() {
+        return socket.isClosed();
+    }
+
+    public InetAddress getAddress() {
+        return address;
+    }
+
+    public NetworkConfiguration getNetworkConfiguration() {
+        return netConfig;
     }
 
     public static class Builder {
@@ -67,9 +75,7 @@ public class BitcomClient implements NetworkClient {
         private InetAddress address;
         private NetworkConfiguration netConfig = StandardConfiguration.MAIN;
         private final Listeners.Builder listenersBuilder = Listeners.builder();
-
-        private Builder() {
-        }
+        private int maxTimePerMessage;
 
         public Builder withAddress(String address) throws UnknownHostException {
             return withAddress(InetAddress.getByName(address));
@@ -95,8 +101,16 @@ public class BitcomClient implements NetworkClient {
             return this;
         }
 
+        public Builder withMaxTimePerMessage(int maxTimePerMessage) {
+            this.maxTimePerMessage = maxTimePerMessage;
+            return this;
+        }
+
         public BitcomClient buildAndConnect() throws IOException {
-            return new BitcomClient(address, netConfig, listenersBuilder);
+            if (address == null) {
+                address = InetAddress.getLocalHost();
+            }
+            return new BitcomClient(address, netConfig, listenersBuilder, maxTimePerMessage);
         }
     }
 

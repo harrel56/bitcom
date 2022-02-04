@@ -3,6 +3,7 @@ package org.harrel.bitcom.client;
 import org.harrel.bitcom.model.msg.Message;
 import org.harrel.bitcom.model.msg.payload.Command;
 import org.harrel.bitcom.model.msg.payload.Payload;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
@@ -11,6 +12,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 class Listeners {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final NetworkClient target;
     private final List<MessageListener<Payload>> globalListeners;
     private final Map<Command, List<MessageListener<? extends Payload>>> specificListeners;
@@ -28,17 +30,15 @@ class Listeners {
     }
 
     void notify(Message<Payload> msg) {
-        LoggerFactory.getLogger(getClass()).info("executing");
         pool.execute(() -> {
+            logger.trace("Listeners notified with msg={}", msg);
             Command cmd = msg.payload().getCommand();
-            List<MessageListener<? extends Payload>> list = specificListeners.computeIfAbsent(cmd, k -> List.of());
+            List<MessageListener<? extends Payload>> list = specificListeners.getOrDefault(cmd, List.of());
             for (MessageListener<? extends Payload> listener : list) {
                 listener.onMessageReceived(target, genericCast(msg.payload()));
             }
-            if (list.isEmpty()) {
-                for (MessageListener<Payload> globalListener : globalListeners) {
-                    globalListener.onMessageReceived(target, genericCast(msg.payload()));
-                }
+            for (MessageListener<Payload> globalListener : globalListeners) {
+                globalListener.onMessageReceived(target, genericCast(msg.payload()));
             }
         });
     }

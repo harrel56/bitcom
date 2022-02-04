@@ -3,15 +3,14 @@ package org.harrel.bitcom.serial;
 import org.harrel.bitcom.model.msg.Header;
 import org.harrel.bitcom.model.msg.payload.Command;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class HeaderSerializer extends Serializer<Header> {
 
     public static final int HEADER_SIZE = 24;
+    public static final int MAGIC_SIZE = 4;
     public static final int COMMAND_SIZE = 12;
 
     @Override
@@ -29,6 +28,16 @@ public class HeaderSerializer extends Serializer<Header> {
         int length = readInt32LE(in);
         int checksum = readInt32BE(in);
         return new Header(magicValue, command, length, checksum);
+    }
+
+    public byte[] serializeMagicValueAsBytes(int val) {
+        var bout = new ByteArrayOutputStream(4);
+        try {
+            writeInt32LE(val, bout);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return bout.toByteArray();
     }
 
     private void writeCommand(Command type, OutputStream out) throws IOException {
