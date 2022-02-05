@@ -41,7 +41,7 @@ class MessageSender {
 
     private synchronized <T extends Payload> Message<T> sendMessageInternal(T payload) throws IOException {
         PayloadSerializer<T> payloadSerializer = serializerFactory.getPayloadSerializer(payload);
-        ByteArrayOutputStream payloadOut = new ByteArrayOutputStream(payloadSerializer.getExpectedByteSize());
+        ByteArrayOutputStream payloadOut = new ByteArrayOutputStream();
         payloadSerializer.serialize(payload, payloadOut);
         byte[] payloadBytes = payloadOut.toByteArray();
 

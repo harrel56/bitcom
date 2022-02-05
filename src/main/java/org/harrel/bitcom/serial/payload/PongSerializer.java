@@ -16,9 +16,4 @@ public class PongSerializer extends PayloadSerializer<Pong> {
     public Pong deserialize(InputStream in) throws IOException {
         return new Pong(readInt64LE(in));
     }
-
-    @Override
-    public int getExpectedByteSize() {
-        return 8;
-    }
 }

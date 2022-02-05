@@ -76,7 +76,7 @@ class MessageReceiver implements AutoCloseable {
             Header header = readHeader(in);
 
             PayloadSerializer<?> payloadSerializer = serializerFactory.getPayloadSerializer(header.command());
-            ByteArrayOutputStream teeOutput = new ByteArrayOutputStream(payloadSerializer.getExpectedByteSize());
+            ByteArrayOutputStream teeOutput = new ByteArrayOutputStream();
             Payload payload = payloadSerializer.deserialize(new TeeInputStream(in, teeOutput));
 
             validator.assertMessageIntegrity(header, teeOutput.toByteArray());

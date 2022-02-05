@@ -2,14 +2,18 @@ package org.harrel.bitcom.model.msg.payload;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public enum Command {
+    addr(Addr.class),
+    inv(Inv.class),
     version(Version.class),
     verack(Verack.class),
     ping(Ping.class),
     pong(Pong.class);
 
     private static final Map<Class<?>, Command> classMap = new HashMap<>();
+
     static {
         for (Command value : Command.values()) {
             classMap.put(value.getPayloadClass(), value);
@@ -27,6 +31,8 @@ public enum Command {
     }
 
     public static Command forClass(Class<? extends Payload> clazz) {
-        return classMap.get(clazz);
+        Command cmd = classMap.get(clazz);
+        Objects.requireNonNull(cmd);
+        return cmd;
     }
 }

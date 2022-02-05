@@ -9,11 +9,6 @@ import java.io.OutputStream;
 public class PingSerializer extends PayloadSerializer<Ping> {
 
     @Override
-    public int getExpectedByteSize() {
-        return 8;
-    }
-
-    @Override
     public void serialize(Ping payload, OutputStream out) throws IOException {
         writeInt64LE(payload.nonce(), out);
     }

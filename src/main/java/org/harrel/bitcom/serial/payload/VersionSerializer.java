@@ -10,19 +10,6 @@ import java.io.OutputStream;
 public class VersionSerializer extends PayloadSerializer<Version> {
 
     @Override
-    public int getExpectedByteSize() {
-        return 4 + // version
-                8 + // services
-                8 + // timestamp
-                26 + // addr_recv
-                26 + // addr_from
-                8 + // nonce
-                VAR_STRING_SIZE + // user_agent
-                4 + // start_height
-                1; // relay
-    }
-
-    @Override
     public void serialize(Version version, OutputStream out) throws IOException {
         writeInt32LE(version.version(), out);
         writeInt64LE(version.services(), out);

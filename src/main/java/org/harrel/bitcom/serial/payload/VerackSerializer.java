@@ -15,9 +15,4 @@ public class VerackSerializer extends PayloadSerializer<Verack> {
     public Verack deserialize(InputStream in) {
         return new Verack();
     }
-
-    @Override
-    public int getExpectedByteSize() {
-        return 0;
-    }
 }

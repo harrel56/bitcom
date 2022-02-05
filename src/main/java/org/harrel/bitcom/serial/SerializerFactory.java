@@ -17,6 +17,8 @@ public class SerializerFactory {
 
     public PayloadSerializer<?> getPayloadSerializer(Command cmd) {
         return switch (cmd) {
+            case addr -> new AddrSerializer();
+            case inv -> new InvSerializer();
             case version -> new VersionSerializer();
             case verack -> new VerackSerializer();
             case ping -> new PingSerializer();

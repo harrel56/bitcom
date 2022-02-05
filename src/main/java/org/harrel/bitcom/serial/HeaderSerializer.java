@@ -46,7 +46,7 @@ public class HeaderSerializer extends Serializer<Header> {
     }
 
     private Command readCommand(InputStream in) throws IOException {
-        byte[] data = in.readNBytes(12);
+        byte[] data = in.readNBytes(COMMAND_SIZE);
         int size;
         for (size = 0; size < data.length; size++) {
             if (data[size] == 0x0) {

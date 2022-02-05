@@ -12,9 +12,4 @@ public record Version(int version,
                       int blockHeight,
                       boolean relay)
         implements Payload {
-
-    @Override
-    public Command getCommand() {
-        return Command.version;
-    }
 }

@@ -1,5 +1,6 @@
 package org.harrel.bitcom.serial;
 
+import org.harrel.bitcom.model.InventoryVector;
 import org.harrel.bitcom.model.NetworkAddress;
 
 import java.io.IOException;
@@ -9,11 +10,13 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public abstract class Serializer<T> {
 
     protected static final int VAR_INT_SIZE = 9;
     protected static final int VAR_STRING_SIZE = 30;
+    protected static final int HASH_SIZE = 32;
 
     public abstract void serialize(T payload, OutputStream out) throws IOException;
 
@@ -112,6 +115,16 @@ public abstract class Serializer<T> {
         writeInt16BE(address.port(), out);
     }
 
+    protected void writeInventoryVector(InventoryVector vector, OutputStream out) throws IOException {
+        writeInt32LE(vector.type().getValue(), out);
+        writeHash(vector.hash(), out);
+    }
+
+    protected void writeHash(String hash, OutputStream out) throws IOException {
+        byte[] hashBytes = hash.getBytes(StandardCharsets.US_ASCII);
+        out.write(Arrays.copyOf(hashBytes, HASH_SIZE));
+    }
+
     protected int readInt16LE(InputStream in) throws IOException {
         byte[] data = in.readNBytes(2);
         int val = data[0] & 0xFF;
@@ -138,8 +151,8 @@ public abstract class Serializer<T> {
     protected int readInt32BE(InputStream in) throws IOException {
         byte[] data = in.readNBytes(4);
         int val = (data[0] & 0xFF) << 24;
-        val |= (data[1] & 0xFF)<< 16;
-        val |= (data[2] & 0xFF)<< 8;
+        val |= (data[1] & 0xFF) << 16;
+        val |= (data[2] & 0xFF) << 8;
         val |= data[3] & 0xFF;
         return val;
     }
@@ -166,7 +179,7 @@ public abstract class Serializer<T> {
         val |= (long) (data[4] & 0xFF) << 24;
         val |= (data[5] & 0xFF) << 16;
         val |= (data[6] & 0xFF) << 8;
-        val |= data[7]  & 0xFF;
+        val |= data[7] & 0xFF;
         return val;
     }
 
@@ -198,5 +211,15 @@ public abstract class Serializer<T> {
         InetAddress address = InetAddress.getByAddress(in.readNBytes(16));
         int port = readInt16BE(in);
         return new NetworkAddress(time, services, address, port);
+    }
+
+    protected InventoryVector readInventoryVector(InputStream in) throws IOException {
+        InventoryVector.Type type = InventoryVector.Type.forValue(readInt32LE(in));
+        String hash = readHash(in);
+        return new InventoryVector(type, hash);
+    }
+
+    protected String readHash(InputStream in) throws IOException {
+        return new String(in.readNBytes(HASH_SIZE), StandardCharsets.US_ASCII);
     }
 }
