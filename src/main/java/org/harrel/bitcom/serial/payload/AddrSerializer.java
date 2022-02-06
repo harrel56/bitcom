@@ -21,9 +21,9 @@ public class AddrSerializer extends PayloadSerializer<Addr> {
 
     @Override
     public Addr deserialize(InputStream in) throws IOException {
-        long count = readVarInt(in);
-        var addresses = new ArrayList<NetworkAddress>((int) count);
-        for (long i = 0; i < count; i++) {
+        int count = (int) readVarInt(in);
+        var addresses = new ArrayList<NetworkAddress>(count);
+        for (int i = 0; i < count; i++) {
             addresses.add(readNetworkAddress(in));
         }
         return new Addr(List.copyOf(addresses));

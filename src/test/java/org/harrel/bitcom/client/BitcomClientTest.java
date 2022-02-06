@@ -11,7 +11,6 @@ import org.junit.jupiter.api.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
@@ -131,7 +130,7 @@ class BitcomClientTest {
                 .buildAndConnect();
         Version data = getVersionPayload();
         server.send(serializeMessage(data));
-        Assertions.assertEquals(Command.version, receiveFuture.get(500, TimeUnit.MILLISECONDS));
+        Assertions.assertEquals(Command.VERSION, receiveFuture.get(500, TimeUnit.MILLISECONDS));
     }
 
     @Test
@@ -147,7 +146,7 @@ class BitcomClientTest {
         server.send(incomplete);
         Assertions.assertThrows(TimeoutException.class, () -> receiveFuture.get(400, TimeUnit.MILLISECONDS));
         server.send(msgBytes);
-        Assertions.assertEquals(Command.version, receiveFuture.get(500, TimeUnit.MILLISECONDS));
+        Assertions.assertEquals(Command.VERSION, receiveFuture.get(500, TimeUnit.MILLISECONDS));
     }
 
     @Test
@@ -163,7 +162,7 @@ class BitcomClientTest {
 
         Version data = getVersionPayload();
         server.send(serializeMessage(data));
-        Assertions.assertEquals(Command.version, receiveFuture.get(500, TimeUnit.MILLISECONDS));
+        Assertions.assertEquals(Command.VERSION, receiveFuture.get(500, TimeUnit.MILLISECONDS));
     }
 
     @Test

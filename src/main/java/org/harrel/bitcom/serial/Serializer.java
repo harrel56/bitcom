@@ -1,5 +1,8 @@
 package org.harrel.bitcom.serial;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+import org.harrel.bitcom.model.Hash;
 import org.harrel.bitcom.model.InventoryVector;
 import org.harrel.bitcom.model.NetworkAddress;
 
@@ -21,6 +24,15 @@ public abstract class Serializer<T> {
     public abstract void serialize(T payload, OutputStream out) throws IOException;
 
     public abstract T deserialize(InputStream in) throws IOException;
+
+    protected byte[] reverseBytes(byte[] bytes) {
+        for (int i = 0; i < bytes.length / 2; i++) {
+            byte tmp = bytes[i];
+            bytes[i] = bytes[bytes.length - i - 1];
+            bytes[bytes.length - i - 1] = tmp;
+        }
+        return bytes;
+    }
 
     protected void writeInt16LE(int val, OutputStream out) throws IOException {
         out.write(val);
@@ -120,9 +132,13 @@ public abstract class Serializer<T> {
         writeHash(vector.hash(), out);
     }
 
-    protected void writeHash(String hash, OutputStream out) throws IOException {
-        byte[] hashBytes = hash.getBytes(StandardCharsets.US_ASCII);
-        out.write(Arrays.copyOf(hashBytes, HASH_SIZE));
+    protected void writeHash(Hash hash, OutputStream out) throws IOException {
+        try {
+            byte[] hashBytes = Hex.decodeHex(hash.value());
+            out.write(Arrays.copyOf(reverseBytes(hashBytes), HASH_SIZE));
+        } catch (DecoderException e) {
+            throw new IOException(e);
+        }
     }
 
     protected int readInt16LE(InputStream in) throws IOException {
@@ -215,11 +231,12 @@ public abstract class Serializer<T> {
 
     protected InventoryVector readInventoryVector(InputStream in) throws IOException {
         InventoryVector.Type type = InventoryVector.Type.forValue(readInt32LE(in));
-        String hash = readHash(in);
+        Hash hash = readHash(in);
         return new InventoryVector(type, hash);
     }
 
-    protected String readHash(InputStream in) throws IOException {
-        return new String(in.readNBytes(HASH_SIZE), StandardCharsets.US_ASCII);
+    protected Hash readHash(InputStream in) throws IOException {
+        byte[] hashBE = reverseBytes(in.readNBytes(HASH_SIZE));
+        return new Hash(Hex.encodeHexString(hashBE));
     }
 }

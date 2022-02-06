@@ -4,9 +4,9 @@ import org.harrel.bitcom.model.InventoryVector;
 
 import java.util.Collection;
 
-public record Inv(Collection<InventoryVector> inventory) implements InventoryPayload {
+public record NotFound(Collection<InventoryVector> inventory) implements InventoryPayload {
 
-    public Inv {
+    public NotFound {
         validate(inventory);
     }
 }

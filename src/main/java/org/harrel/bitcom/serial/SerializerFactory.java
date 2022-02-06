@@ -1,7 +1,6 @@
 package org.harrel.bitcom.serial;
 
-import org.harrel.bitcom.model.msg.payload.Command;
-import org.harrel.bitcom.model.msg.payload.Payload;
+import org.harrel.bitcom.model.msg.payload.*;
 import org.harrel.bitcom.serial.payload.*;
 
 public class SerializerFactory {
@@ -17,12 +16,16 @@ public class SerializerFactory {
 
     public PayloadSerializer<?> getPayloadSerializer(Command cmd) {
         return switch (cmd) {
-            case addr -> new AddrSerializer();
-            case inv -> new InvSerializer();
-            case version -> new VersionSerializer();
-            case verack -> new VerackSerializer();
-            case ping -> new PingSerializer();
-            case pong -> new PongSerializer();
+            case ADDR -> new AddrSerializer();
+            case INV -> new InventorySerializer<>(Inv::new);
+            case GETDATA -> new InventorySerializer<>(GetData::new);
+            case NOTFOUND -> new InventorySerializer<>(NotFound::new);
+            case GETBLOCKS -> new GetBlocksSerializer();
+            case GETHEADERS -> new GetHeadersSerializer();
+            case VERSION -> new VersionSerializer();
+            case VERACK -> new VerackSerializer();
+            case PING -> new PingSerializer();
+            case PONG -> new PongSerializer();
         };
     }
 }

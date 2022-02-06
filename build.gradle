@@ -12,6 +12,7 @@ repositories {
 
 dependencies {
     implementation 'org.slf4j:slf4j-api:1.7.35'
+    implementation 'commons-codec:commons-codec:1.15'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testImplementation 'org.mockito:mockito-junit-jupiter:4.3.1'

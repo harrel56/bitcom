@@ -108,7 +108,7 @@ class MessageReceiver implements AutoCloseable {
                 if (buffer.position() >= MAGIC_SIZE) {
                     buffer.get(buffer.position() - MAGIC_SIZE, tmp);
                     if (isMagicValue(tmp)) {
-                        logger.trace("magicValue={}", Arrays.toString(tmp));
+                        logger.trace("magicValue={}", tmp);
                         return tmp;
                     }
                 }

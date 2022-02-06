@@ -3,14 +3,11 @@ package org.harrel.bitcom.model;
 import java.util.HashMap;
 import java.util.Map;
 
-public record InventoryVector(Type type, String hash) {
+public record InventoryVector(Type type, Hash hash) {
 
     public InventoryVector {
         if (type == null) {
             throw new IllegalArgumentException("Inventory vector type cannot be null");
-        }
-        if (hash == null || hash.length() != 32) {
-            throw new IllegalArgumentException("Inventory vector hash must be 32 long");
         }
     }
 
