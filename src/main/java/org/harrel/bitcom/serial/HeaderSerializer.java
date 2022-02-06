@@ -41,7 +41,7 @@ public class HeaderSerializer extends Serializer<Header> {
     }
 
     private void writeCommand(Command type, OutputStream out) throws IOException {
-        byte[] commandBytes = type.name().getBytes(StandardCharsets.US_ASCII);
+        byte[] commandBytes = type.name().toLowerCase().getBytes(StandardCharsets.US_ASCII);
         out.write(Arrays.copyOf(commandBytes, COMMAND_SIZE));
     }
 
@@ -54,6 +54,6 @@ public class HeaderSerializer extends Serializer<Header> {
             }
         }
         String command = new String(Arrays.copyOf(data, size));
-        return Command.valueOf(command);
+        return Command.valueOf(command.toUpperCase());
     }
 }
