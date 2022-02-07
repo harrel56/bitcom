@@ -22,6 +22,7 @@ public class SerializerFactory {
             case NOTFOUND -> new InventorySerializer<>(NotFound::new);
             case GETBLOCKS -> new GetBlocksSerializer();
             case GETHEADERS -> new GetHeadersSerializer();
+            case TX -> new GetHeadersSerializer();
             case VERSION -> new VersionSerializer();
             case VERACK -> new VerackSerializer();
             case PING -> new PingSerializer();

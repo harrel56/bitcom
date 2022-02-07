@@ -9,6 +9,9 @@ public record InventoryVector(Type type, Hash hash) {
         if (type == null) {
             throw new IllegalArgumentException("Inventory vector type cannot be null");
         }
+        if (hash == null) {
+            throw new IllegalArgumentException("Inventory vector hash cannot be null");
+        }
     }
 
     public enum Type {

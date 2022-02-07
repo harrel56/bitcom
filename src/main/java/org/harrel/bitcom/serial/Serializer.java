@@ -1,10 +1,7 @@
 package org.harrel.bitcom.serial;
 
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-import org.harrel.bitcom.model.Hash;
-import org.harrel.bitcom.model.InventoryVector;
-import org.harrel.bitcom.model.NetworkAddress;
+import org.harrel.bitcom.client.Hashes;
+import org.harrel.bitcom.model.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -133,12 +130,28 @@ public abstract class Serializer<T> {
     }
 
     protected void writeHash(Hash hash, OutputStream out) throws IOException {
-        try {
-            byte[] hashBytes = Hex.decodeHex(hash.value());
-            out.write(Arrays.copyOf(reverseBytes(hashBytes), HASH_SIZE));
-        } catch (DecoderException e) {
-            throw new IOException(e);
-        }
+        byte[] hashBytes = Hashes.decodeHex(hash.value());
+        out.write(Arrays.copyOf(reverseBytes(hashBytes), HASH_SIZE));
+    }
+
+    protected void writeTxIn(TxIn txIn, OutputStream out) throws IOException {
+        writeOutPoint(txIn.previous(), out);
+        byte[] scriptBytes = Hashes.decodeHex(txIn.script());
+        writeVarInt(scriptBytes.length, out);
+        out.write(scriptBytes);
+        writeInt32LE(txIn.sequence(), out);
+    }
+
+    protected void writeTxOut(TxOut txOut, OutputStream out) throws IOException {
+        writeInt64LE(txOut.value(), out);
+        byte[] scriptBytes = Hashes.decodeHex(txOut.script());
+        writeVarInt(scriptBytes.length, out);
+        out.write(scriptBytes);
+    }
+
+    protected void writeOutPoint(OutPoint outPoint, OutputStream out) throws IOException {
+        writeHash(outPoint.hash(), out);
+        writeInt32LE(outPoint.index(), out);
     }
 
     protected int readInt16LE(InputStream in) throws IOException {
@@ -237,6 +250,29 @@ public abstract class Serializer<T> {
 
     protected Hash readHash(InputStream in) throws IOException {
         byte[] hashBE = reverseBytes(in.readNBytes(HASH_SIZE));
-        return new Hash(Hex.encodeHexString(hashBE));
+        return new Hash(Hashes.encodeHex(hashBE));
+    }
+
+    protected TxIn readTxIn(InputStream in) throws IOException {
+        OutPoint previous = readOutPoint(in);
+        int scriptLength = (int) readVarInt(in);
+        byte[] scriptBytes = in.readNBytes(scriptLength);
+        String script = Hashes.encodeHex(scriptBytes);
+        int sequence = readInt32LE(in);
+        return new TxIn(previous, script, sequence);
+    }
+
+    protected TxOut readTxOut(InputStream in) throws IOException {
+        long value = readInt64LE(in);
+        int scriptLength = (int) readVarInt(in);
+        byte[] scriptBytes = in.readNBytes(scriptLength);
+        String script = Hashes.encodeHex(scriptBytes);
+        return new TxOut(value, script);
+    }
+
+    protected OutPoint readOutPoint(InputStream in) throws IOException {
+        Hash hash = readHash(in);
+        int index = readInt32LE(in);
+        return new OutPoint(index, hash);
     }
 }

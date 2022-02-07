@@ -10,8 +10,8 @@ public record NetworkAddress(int time,
         if (address == null) {
             throw new IllegalArgumentException("Address was null");
         }
-        if (port < 0) {
-            throw new IllegalArgumentException("Port cannot be a negative number");
+        if (port < 0 || port > 65535) {
+            throw new IllegalArgumentException("Invalid port number");
         }
     }
 }

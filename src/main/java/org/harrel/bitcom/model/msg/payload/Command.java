@@ -11,6 +11,7 @@ public enum Command {
     NOTFOUND(NotFound.class),
     GETBLOCKS(GetBlocks.class),
     GETHEADERS(GetHeaders.class),
+    TX(Tx.class),
     VERSION(Version.class),
     VERACK(Verack.class),
     PING(Ping.class),

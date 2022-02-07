@@ -1,7 +1,7 @@
 package org.harrel.bitcom.config;
 
 public enum StandardConfiguration implements NetworkConfiguration {
-    MAIN(0xD9B4BEF9, 8333, new String[] {
+    MAIN(0xD9B4BEF9, 8333, new String[]{
             "seed.bitcoin.sipa.be",         // Pieter Wuille
             "dnsseed.bluematt.me",          // Matt Corallo
             "dnsseed.bitcoin.dashjr.org",   // Luke Dashjr
@@ -11,7 +11,7 @@ public enum StandardConfiguration implements NetworkConfiguration {
             "seed.bitcoin.sprovoost.nl",    // Sjors Provoost
             "dnsseed.emzy.de",              // Stephan Oeste
     }),
-    TESTNET3(0x0709110B, 18333, new String[] {
+    TESTNET3(0x0709110B, 18333, new String[]{
             "testnet-seed.bitcoin.jonasschnelli.ch", // Jonas Schnelli
             "seed.tbtc.petertodd.org",               // Peter Todd
             "seed.testnet.bitcoin.sprovoost.nl",     // Sjors Provoost
@@ -38,7 +38,6 @@ public enum StandardConfiguration implements NetworkConfiguration {
         return port;
     }
 
-    @Override
     public String[] getDnsSeeders() {
         return dnsSeeders;
     }
