@@ -2,7 +2,6 @@ package org.harrel.bitcom.client;
 
 import org.harrel.bitcom.config.StandardConfiguration;
 import org.harrel.bitcom.model.NetworkAddress;
-import org.harrel.bitcom.model.msg.Message;
 import org.harrel.bitcom.model.msg.payload.Ping;
 import org.harrel.bitcom.model.msg.payload.Verack;
 import org.harrel.bitcom.model.msg.payload.Version;
@@ -11,8 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.Set;
 
 class MainTest {
 
@@ -28,9 +26,9 @@ class MainTest {
                 .withGlobalListener((c, p) -> System.out.println(p))
                 .buildAndConnect();
 
-        client.sendMessage(new Version(70015, 1L, 321,
-                new NetworkAddress(1, 1L, InetAddress.getByName("127.0.0.1"), 8181),
-                new NetworkAddress(2, 2L, InetAddress.getByName("127.0.0.2"), 8282),
+        client.sendMessage(new Version(70015, Set.of(), 321,
+                new NetworkAddress(1, Set.of(), InetAddress.getByName("127.0.0.1"), 8181),
+                new NetworkAddress(2, Set.of(), InetAddress.getByName("127.0.0.2"), 8282),
                 123L, "hello", 22, true));
         Thread.sleep(60000);
     }

@@ -22,9 +22,13 @@ public class SerializerFactory {
             case NOTFOUND -> new InventorySerializer<>(NotFound::new);
             case GETBLOCKS -> new GetBlocksSerializer();
             case GETHEADERS -> new GetHeadersSerializer();
-            case TX -> new GetHeadersSerializer();
+            case TX -> new TxSerializer();
+            case BLOCK -> new BlockSerializer();
+            case HEADERS -> new HeadersSerializer();
+            case GETADDR -> new NopSerializer<>(GetAddr::new);
+            case MEMPOOL -> new NopSerializer<>(MemPool::new);
             case VERSION -> new VersionSerializer();
-            case VERACK -> new VerackSerializer();
+            case VERACK -> new NopSerializer<>(Verack::new);
             case PING -> new PingSerializer();
             case PONG -> new PongSerializer();
         };

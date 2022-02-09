@@ -1,9 +1,10 @@
 package org.harrel.bitcom.model;
 
 import java.net.InetAddress;
+import java.util.Set;
 
 public record NetworkAddress(int time,
-                             long services,
+                             Set<Service> services,
                              InetAddress address,
                              int port) {
     public NetworkAddress {
@@ -12,6 +13,9 @@ public record NetworkAddress(int time,
         }
         if (port < 0 || port > 65535) {
             throw new IllegalArgumentException("Invalid port number");
+        }
+        if (services == null) {
+            services = Set.of();
         }
     }
 }

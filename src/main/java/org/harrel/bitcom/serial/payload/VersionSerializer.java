@@ -12,7 +12,7 @@ public class VersionSerializer extends PayloadSerializer<Version> {
     @Override
     public void serialize(Version version, OutputStream out) throws IOException {
         writeInt32LE(version.version(), out);
-        writeInt64LE(version.services(), out);
+        writeServices(version.services(), out);
         writeInt64LE(version.timestamp(), out);
         writeNetworkAddressWithoutTime(version.receiver(), out);
         writeNetworkAddressWithoutTime(version.transmitter(), out);
@@ -25,7 +25,7 @@ public class VersionSerializer extends PayloadSerializer<Version> {
     @Override
     public Version deserialize(InputStream in) throws IOException {
         int version = readInt32LE(in);
-        long services = readInt64LE(in);
+        var services = readServices(in);
         long timestamp = readInt64LE(in);
         NetworkAddress receiver = readNetworkAddressWithoutTime(0, in);
         NetworkAddress transmitter = readNetworkAddressWithoutTime(0, in);

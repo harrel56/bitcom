@@ -11,6 +11,8 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class Serializer<T> {
 
@@ -97,13 +99,21 @@ public abstract class Serializer<T> {
         out.write(val.getBytes(StandardCharsets.US_ASCII));
     }
 
+    protected void writeServices(Set<Service> services, OutputStream out) throws IOException {
+        long val = 0L;
+        for (Service service : services) {
+            val |= service.getValue();
+        }
+        writeInt64LE(val, out);
+    }
+
     protected void writeNetworkAddress(NetworkAddress address, OutputStream out) throws IOException {
         writeInt32LE(address.time(), out);
         writeNetworkAddressWithoutTime(address, out);
     }
 
     protected void writeNetworkAddressWithoutTime(NetworkAddress address, OutputStream out) throws IOException {
-        writeInt64LE(address.services(), out);
+        writeServices(address.services(), out);
 
         if (address.address() instanceof Inet4Address ipv4) {
             writeInt64BE(0x00L, out);
@@ -230,13 +240,24 @@ public abstract class Serializer<T> {
         return new String(in.readNBytes(length), StandardCharsets.US_ASCII);
     }
 
+    protected Set<Service> readServices(InputStream in) throws IOException {
+        Set<Service> services = new HashSet<>();
+        long val = readInt64LE(in);
+        for (Service service : Service.values()) {
+            if ((val & service.getValue()) == service.getValue()) {
+                services.add(service);
+            }
+        }
+        return Set.copyOf(services);
+    }
+
     protected NetworkAddress readNetworkAddress(InputStream in) throws IOException {
         int time = readInt32LE(in);
         return readNetworkAddressWithoutTime(time, in);
     }
 
     protected NetworkAddress readNetworkAddressWithoutTime(int time, InputStream in) throws IOException {
-        long services = readInt64LE(in);
+        var services = readServices(in);
         InetAddress address = InetAddress.getByAddress(in.readNBytes(16));
         int port = readInt16BE(in);
         return new NetworkAddress(time, services, address, port);

@@ -1,6 +1,7 @@
 package org.harrel.bitcom.serial;
 
 import org.harrel.bitcom.model.NetworkAddress;
+import org.harrel.bitcom.model.Service;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import org.mockito.Mockito;
 import java.io.*;
 import java.net.InetAddress;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 class SerializerTest {
@@ -139,11 +141,11 @@ class SerializerTest {
     @Test
     void networkAddress() throws IOException {
         NetworkAddress[] data = new NetworkAddress[]{
-                new NetworkAddress(0, 0, InetAddress.getByName("127.0.0.1"), 80),
-                new NetworkAddress(-255, 1024, InetAddress.getByName("8.8.8.8"), 443),
-                new NetworkAddress(Integer.MAX_VALUE, Long.MAX_VALUE, InetAddress.getByName("localhost"), 0),
-                new NetworkAddress(Integer.MIN_VALUE, Long.MIN_VALUE, InetAddress.getByName("2001:db8::1"), 0xffff),
-                new NetworkAddress(1, 1, InetAddress.getByName("2001:db8:0:1:1:1:1:1"), 8080),
+                new NetworkAddress(0, Set.of(), InetAddress.getByName("127.0.0.1"), 80),
+                new NetworkAddress(-255, Set.of(), InetAddress.getByName("8.8.8.8"), 443),
+                new NetworkAddress(Integer.MAX_VALUE, Set.of(Service.NODE_GETUTXO), InetAddress.getByName("localhost"), 0),
+                new NetworkAddress(Integer.MIN_VALUE, Set.of(), InetAddress.getByName("2001:db8::1"), 0xffff),
+                new NetworkAddress(1, Set.of(), InetAddress.getByName("2001:db8:0:1:1:1:1:1"), 8080),
         };
         for (NetworkAddress adr : data) {
             mock.writeNetworkAddress(adr, out);
@@ -154,11 +156,11 @@ class SerializerTest {
     @Test
     void networkAddressWithoutTime() throws IOException {
         NetworkAddress[] data = new NetworkAddress[]{
-                new NetworkAddress(0, 0, InetAddress.getByName("127.0.0.1"), 80),
-                new NetworkAddress(-255, 1024, InetAddress.getByName("8.8.8.8"), 443),
-                new NetworkAddress(Integer.MAX_VALUE, Long.MAX_VALUE, InetAddress.getByName("localhost"), 0),
-                new NetworkAddress(Integer.MIN_VALUE, Long.MIN_VALUE, InetAddress.getByName("2001:db8::1"), 0xffff),
-                new NetworkAddress(1, 1, InetAddress.getByName("2001:db8:0:1:1:1:1:1"), 8080),
+                new NetworkAddress(0, Set.of(), InetAddress.getByName("127.0.0.1"), 80),
+                new NetworkAddress(-255, Set.of(), InetAddress.getByName("8.8.8.8"), 443),
+                new NetworkAddress(Integer.MAX_VALUE, Set.of(Service.NODE_GETUTXO), InetAddress.getByName("localhost"), 0),
+                new NetworkAddress(Integer.MIN_VALUE, Set.of(), InetAddress.getByName("2001:db8::1"), 0xffff),
+                new NetworkAddress(1, Set.of(), InetAddress.getByName("2001:db8:0:1:1:1:1:1"), 8080),
         };
         for (NetworkAddress adr : data) {
             mock.writeNetworkAddressWithoutTime(adr, out);

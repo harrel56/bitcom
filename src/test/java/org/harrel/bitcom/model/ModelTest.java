@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -42,9 +43,10 @@ class ModelTest {
     @Test
     void networkAddressInvalid() throws UnknownHostException {
         InetAddress localHost = InetAddress.getLocalHost();
-        assertThrows(IllegalArgumentException.class, () -> new NetworkAddress(0, 0, null, 1));
-        assertThrows(IllegalArgumentException.class, () -> new NetworkAddress(0, 0, localHost, -1));
-        assertThrows(IllegalArgumentException.class, () -> new NetworkAddress(0, 0, localHost, 65536));
+        Set<Service> noServices = Set.of();
+        assertThrows(IllegalArgumentException.class, () -> new NetworkAddress(0, noServices, null, 1));
+        assertThrows(IllegalArgumentException.class, () -> new NetworkAddress(0, noServices, localHost, -1));
+        assertThrows(IllegalArgumentException.class, () -> new NetworkAddress(0, noServices, localHost, 65536));
     }
 
     @Test

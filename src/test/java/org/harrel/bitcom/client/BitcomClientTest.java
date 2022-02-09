@@ -3,6 +3,7 @@ package org.harrel.bitcom.client;
 import org.harrel.bitcom.config.NetworkConfiguration;
 import org.harrel.bitcom.config.StandardConfiguration;
 import org.harrel.bitcom.model.NetworkAddress;
+import org.harrel.bitcom.model.Service;
 import org.harrel.bitcom.model.msg.payload.Command;
 import org.harrel.bitcom.model.msg.payload.Payload;
 import org.harrel.bitcom.model.msg.payload.Version;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -199,9 +201,9 @@ class BitcomClientTest {
     }
 
     private Version getVersionPayload() {
-        return new Version(70015, 1024, System.currentTimeMillis() / 1000,
-                new NetworkAddress(0, 0x00, localAddress, 8333),
-                new NetworkAddress(0, 0x00, localAddress, 8333),
+        return new Version(70015, Set.of(Service.NODE_NETWORK_LIMITED), System.currentTimeMillis() / 1000,
+                new NetworkAddress(0, Set.of(), localAddress, 8333),
+                new NetworkAddress(0, Set.of(), localAddress, 8333),
                 0x0, "", 1, false);
     }
 }
