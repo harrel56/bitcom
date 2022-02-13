@@ -16,6 +16,8 @@ public class SerializerFactory {
 
     public PayloadSerializer<?> getPayloadSerializer(Command cmd) {
         return switch (cmd) {
+            case VERSION -> new VersionSerializer();
+            case VERACK -> new NopSerializer<>(Verack::new);
             case ADDR -> new AddrSerializer();
             case INV -> new InventorySerializer<>(Inv::new);
             case GETDATA -> new InventorySerializer<>(GetData::new);
@@ -27,10 +29,9 @@ public class SerializerFactory {
             case HEADERS -> new HeadersSerializer();
             case GETADDR -> new NopSerializer<>(GetAddr::new);
             case MEMPOOL -> new NopSerializer<>(MemPool::new);
-            case VERSION -> new VersionSerializer();
-            case VERACK -> new NopSerializer<>(Verack::new);
             case PING -> new PingSerializer();
             case PONG -> new PongSerializer();
+            case REJECT -> new RejectSerializer();
         };
     }
 }

@@ -40,13 +40,13 @@ public class HeaderSerializer extends Serializer<Header> {
         return bout.toByteArray();
     }
 
-    private void writeCommand(Command type, OutputStream out) throws IOException {
+    protected void writeCommand(Command type, OutputStream out) throws IOException {
         byte[] commandBytes = type.name().toLowerCase().getBytes(StandardCharsets.US_ASCII);
-        out.write(Arrays.copyOf(commandBytes, COMMAND_SIZE));
+        out.write(Arrays.copyOf(commandBytes, HeaderSerializer.COMMAND_SIZE));
     }
 
-    private Command readCommand(InputStream in) throws IOException {
-        byte[] data = in.readNBytes(COMMAND_SIZE);
+    protected Command readCommand(InputStream in) throws IOException {
+        byte[] data = in.readNBytes(HeaderSerializer.COMMAND_SIZE);
         int size;
         for (size = 0; size < data.length; size++) {
             if (data[size] == 0x0) {

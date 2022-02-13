@@ -16,7 +16,7 @@ import java.util.List;
 
 public abstract class PayloadSerializer<T extends Payload> extends Serializer<T> {
 
-    public void writeBlock(Block payload, OutputStream out) throws IOException {
+    protected void writeBlock(Block payload, OutputStream out) throws IOException {
         writeInt32LE(payload.version(), out);
         writeHash(payload.previous(), out);
         writeHash(payload.merkleRoot(), out);
@@ -29,7 +29,7 @@ public abstract class PayloadSerializer<T extends Payload> extends Serializer<T>
         }
     }
 
-    public Block readBlock(InputStream in) throws IOException {
+    protected Block readBlock(InputStream in) throws IOException {
         int version = readInt32LE(in);
         Hash previous = readHash(in);
         Hash merkleRoot = readHash(in);

@@ -296,4 +296,5 @@ public abstract class Serializer<T> {
         int index = readInt32LE(in);
         return new OutPoint(index, hash);
     }
+
 }

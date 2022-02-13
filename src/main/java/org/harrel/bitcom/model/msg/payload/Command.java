@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Objects;
 
 public enum Command {
+    VERSION(Version.class),
+    VERACK(Verack.class),
     ADDR(Addr.class),
     INV(Inv.class),
     GETDATA(GetData.class),
@@ -16,10 +18,9 @@ public enum Command {
     HEADERS(Headers.class),
     GETADDR(GetAddr.class),
     MEMPOOL(MemPool.class),
-    VERSION(Version.class),
-    VERACK(Verack.class),
     PING(Ping.class),
-    PONG(Pong.class);
+    PONG(Pong.class),
+    REJECT(Reject.class);
 
     private static final Map<Class<?>, Command> classMap = new HashMap<>();
 
