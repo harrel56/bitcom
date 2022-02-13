@@ -6,6 +6,18 @@ import java.util.Map;
 //TODO optional data field of unknown length should be handled
 public record Reject(Command command, Type type, String reason) implements Payload {
 
+    public Reject {
+        if (command == null) {
+            throw new IllegalArgumentException("Command cannot be null");
+        }
+        if (type == null) {
+            throw new IllegalArgumentException("Type cannot be null");
+        }
+        if (reason == null) {
+            throw new IllegalArgumentException("Reason cannot be null");
+        }
+    }
+
     public enum Type {
         MALFORMED(0x01),
         INVALID(0x10),
