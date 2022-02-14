@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.concurrent.CompletableFuture;
 
@@ -28,13 +29,13 @@ public class BitcomClient implements NetworkClient {
     }
 
     private BitcomClient(InetAddress address, NetworkConfiguration netConfig,
-                         Listeners.Builder listenersBuilder, int maxTimePerMessage) throws IOException {
+                         Listeners.Builder listenersBuilder, int messageTimeout) throws IOException {
         this.address = address;
         this.netConfig = netConfig;
 
         listenersBuilder.withTarget(this);
         this.socket = new Socket(address, netConfig.getPort());
-        socket.setSoTimeout(maxTimePerMessage);
+        socket.setSoTimeout(messageTimeout);
         this.sender = new MessageSender(socket.getOutputStream(), netConfig);
         this.receiver = new MessageReceiver(socket.getInputStream(), netConfig, listenersBuilder.build());
         logger.info("Established socket connection to {}:{}", address.getHostAddress(), netConfig.getPort());
@@ -77,7 +78,7 @@ public class BitcomClient implements NetworkClient {
         private InetAddress address;
         private NetworkConfiguration netConfig = StandardConfiguration.MAIN;
         private final Listeners.Builder listenersBuilder = Listeners.builder();
-        private int maxTimePerMessage;
+        private int messageTimeout;
 
         public Builder withAddress(String address) throws UnknownHostException {
             return withAddress(InetAddress.getByName(address));
@@ -93,18 +94,33 @@ public class BitcomClient implements NetworkClient {
             return this;
         }
 
-        public <T extends Payload> Builder withListener(Class<T> payloadClass, MessageListener<T> listener) {
-            listenersBuilder.withListener(payloadClass, listener);
+        public <T extends Payload> Builder withMessageListener(Class<T> payloadClass, MessageListener<T> listener) {
+            listenersBuilder.withMessageListener(payloadClass, listener);
             return this;
         }
 
-        public Builder withGlobalListener(MessageListener<Payload> listener) {
-            listenersBuilder.withGlobalListener(listener);
+        public Builder withGlobalMessageListener(MessageListener<Payload> listener) {
+            listenersBuilder.withGlobalMessageListener(listener);
             return this;
         }
 
-        public Builder withMaxTimePerMessage(int maxTimePerMessage) {
-            this.maxTimePerMessage = maxTimePerMessage;
+        public Builder withMessageTimeoutListener(ErrorListener<SocketTimeoutException> listener) {
+            listenersBuilder.withMessageTimeoutListener(listener);
+            return this;
+        }
+
+        public Builder withMessageMalformedListener(ErrorListener<MessageIntegrityException> listener) {
+            listenersBuilder.withMessageMalformedListener(listener);
+            return this;
+        }
+
+        public Builder withGlobalErrorListener(ErrorListener<Exception> listener) {
+            listenersBuilder.withGlobalErrorListener(listener);
+            return this;
+        }
+
+        public Builder withMessageTimeout(int messageTimeout) {
+            this.messageTimeout = messageTimeout;
             return this;
         }
 
@@ -112,7 +128,7 @@ public class BitcomClient implements NetworkClient {
             if (address == null) {
                 address = InetAddress.getLocalHost();
             }
-            return new BitcomClient(address, netConfig, listenersBuilder, maxTimePerMessage);
+            return new BitcomClient(address, netConfig, listenersBuilder, messageTimeout);
         }
     }
 }

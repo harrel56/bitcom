@@ -1,23 +1,18 @@
 package org.harrel.bitcom.client;
 
-import org.harrel.bitcom.model.msg.Header;
+import org.harrel.bitcom.model.msg.Message;
+import org.harrel.bitcom.model.msg.payload.Payload;
 
 class Validator {
 
-    public void assertMessageIntegrity(Header header, byte[] payload) throws MessageIntegrityException {
-        if (header.length() != payload.length) {
-            throw new MessageIntegrityException("Length declared in header was not equal to payload bytes length. header=%d, payload=%d"
-                    .formatted(header.length(), payload.length));
+    public void assertMessageIntegrity(Message<Payload> msg, byte[] payload) throws MessageIntegrityException {
+        if (msg.header().length() != payload.length) {
+            throw new MessageIntegrityException(msg, "Length declared in header was not equal to payload bytes length. header=%d, payload=%d"
+                    .formatted(msg.header().length(), payload.length));
         }
-        if (header.checksum() != Hashes.getPayloadChecksum(payload)) {
-            throw new MessageIntegrityException("Checksum declared in header was not correct. checksum=0x%s expected=0x%s"
-                    .formatted(Integer.toHexString(header.checksum()), Integer.toHexString(Hashes.getPayloadChecksum(payload))));
+        if (msg.header().checksum() != Hashes.getPayloadChecksum(payload)) {
+            throw new MessageIntegrityException(msg, "Checksum declared in header was not correct. checksum=0x%s expected=0x%s"
+                    .formatted(Integer.toHexString(msg.header().checksum()), Integer.toHexString(Hashes.getPayloadChecksum(payload))));
         }
-    }
-}
-
-class MessageIntegrityException extends Exception {
-    public MessageIntegrityException(String message) {
-        super(message);
     }
 }

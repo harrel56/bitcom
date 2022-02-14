@@ -19,11 +19,11 @@ class MainTest {
     void test() throws IOException, InterruptedException {
         BitcomClient client = BitcomClient.builder().withAddress("81.169.184.84")
                 .withNetworkConfiguration(StandardConfiguration.MAIN)
-                .withListener(Version.class, (c, p) -> {
+                .withMessageListener(Version.class, (c, p) -> {
                     c.sendMessage(new Verack());
                     c.sendMessage(new Ping(99999));
                 })
-                .withGlobalListener((c, p) -> System.out.println(p))
+                .withGlobalMessageListener((c, p) -> System.out.println(p))
                 .buildAndConnect();
 
         client.sendMessage(new Version(70015, Set.of(), 321,

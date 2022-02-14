@@ -79,15 +79,19 @@ class MessageReceiver implements AutoCloseable {
             ByteArrayOutputStream teeOutput = new ByteArrayOutputStream();
             Payload payload = payloadSerializer.deserialize(new TeeInputStream(in, teeOutput));
 
-            validator.assertMessageIntegrity(header, teeOutput.toByteArray());
-            listeners.notify(new Message<>(header, payload));
+            Message<Payload> msg = new Message<>(header, payload);
+            validator.assertMessageIntegrity(msg, teeOutput.toByteArray());
+            listeners.notify(msg);
 
         } catch (SocketTimeoutException e) {
             logger.warn("Reading message timed out. Skipping");
+            listeners.notifyError(e);
         } catch (MessageIntegrityException e) {
             logger.warn("Ignoring malformed message. {}", e.getMessage());
+            listeners.notifyError(e);
         } catch (RuntimeException e) {
             logger.warn("Message deserialization failed", e);
+            listeners.notifyError(e);
         }
     }
 

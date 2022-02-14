@@ -93,7 +93,7 @@ class BitcomClientTest {
     void receiveMessage() throws Exception {
         CompletableFuture<Payload> receiveFuture = new CompletableFuture<>();
         BitcomClient client = BitcomClient.builder()
-                .withGlobalListener((c, p) -> receiveFuture.complete(p.payload()))
+                .withGlobalMessageListener((c, p) -> receiveFuture.complete(p.payload()))
                 .buildAndConnect();
         Version data = getVersionPayload();
         server.send(serializeMessage(data));
@@ -104,7 +104,7 @@ class BitcomClientTest {
     void receiveMessageCustomConfig() throws Exception {
         CompletableFuture<Payload> receiveFuture = new CompletableFuture<>();
         BitcomClient client = BitcomClient.builder()
-                .withGlobalListener((c, p) -> receiveFuture.complete(p.payload()))
+                .withGlobalMessageListener((c, p) -> receiveFuture.complete(p.payload()))
                 .withNetworkConfiguration(new NetworkConfiguration() {
                     @Override
                     public int getMagicValue() {
@@ -128,7 +128,7 @@ class BitcomClientTest {
     void specificListener() throws Exception {
         CompletableFuture<Command> receiveFuture = new CompletableFuture<>();
         BitcomClient client = BitcomClient.builder()
-                .withListener(Version.class, (c, p) -> receiveFuture.complete(p.payload().getCommand()))
+                .withMessageListener(Version.class, (c, p) -> receiveFuture.complete(p.payload().getCommand()))
                 .buildAndConnect();
         Version data = getVersionPayload();
         server.send(serializeMessage(data));
@@ -139,8 +139,8 @@ class BitcomClientTest {
     void withMaxTimePerMessage() throws Exception {
         CompletableFuture<Command> receiveFuture = new CompletableFuture<>();
         BitcomClient client = BitcomClient.builder()
-                .withListener(Version.class, (c, p) -> receiveFuture.complete(p.payload().getCommand()))
-                .withMaxTimePerMessage(1)
+                .withMessageListener(Version.class, (c, p) -> receiveFuture.complete(p.payload().getCommand()))
+                .withMessageTimeout(1)
                 .buildAndConnect();
         Version data = getVersionPayload();
         byte[] msgBytes = serializeMessage(data);
@@ -155,7 +155,7 @@ class BitcomClientTest {
     void withTrashBefore() throws Exception {
         CompletableFuture<Command> receiveFuture = new CompletableFuture<>();
         BitcomClient client = BitcomClient.builder()
-                .withListener(Version.class, (c, p) -> receiveFuture.complete(p.payload().getCommand()))
+                .withMessageListener(Version.class, (c, p) -> receiveFuture.complete(p.payload().getCommand()))
                 .buildAndConnect();
 
         byte[] trash = new byte[8192];
@@ -171,7 +171,7 @@ class BitcomClientTest {
     void invalidMsgLength() throws Exception {
         CompletableFuture<Command> receiveFuture = new CompletableFuture<>();
         BitcomClient client = BitcomClient.builder()
-                .withListener(Version.class, (c, p) -> receiveFuture.complete(p.payload().getCommand()))
+                .withMessageListener(Version.class, (c, p) -> receiveFuture.complete(p.payload().getCommand()))
                 .buildAndConnect();
         Version data = getVersionPayload();
         byte[] bytes = serializeMessage(data);
@@ -184,7 +184,7 @@ class BitcomClientTest {
     void invalidMsgChecksum() throws Exception {
         CompletableFuture<Command> receiveFuture = new CompletableFuture<>();
         BitcomClient client = BitcomClient.builder()
-                .withListener(Version.class, (c, p) -> receiveFuture.complete(p.payload().getCommand()))
+                .withMessageListener(Version.class, (c, p) -> receiveFuture.complete(p.payload().getCommand()))
                 .buildAndConnect();
         Version data = getVersionPayload();
         byte[] bytes = serializeMessage(data);
