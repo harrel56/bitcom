@@ -45,8 +45,8 @@ class ModelTest {
         InetAddress localHost = InetAddress.getLocalHost();
         Set<Service> noServices = Set.of();
         assertThrows(IllegalArgumentException.class, () -> new NetworkAddress(0, noServices, null, 1));
-        assertThrows(IllegalArgumentException.class, () -> new NetworkAddress(0, noServices, localHost, -1));
-        assertThrows(IllegalArgumentException.class, () -> new NetworkAddress(0, noServices, localHost, 65536));
+        assertThrows(IllegalArgumentException.class, () -> new NetworkAddress(0, null, localHost, -1));
+        assertThrows(IllegalArgumentException.class, () -> new NetworkAddress(0, null, localHost, 65536));
     }
 
     @Test

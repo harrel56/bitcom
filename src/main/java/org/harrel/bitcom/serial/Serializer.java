@@ -16,8 +16,6 @@ import java.util.Set;
 
 public abstract class Serializer<T> {
 
-    protected static final int VAR_INT_SIZE = 9;
-    protected static final int VAR_STRING_SIZE = 30;
     protected static final int HASH_SIZE = 32;
 
     public abstract void serialize(T payload, OutputStream out) throws IOException;
