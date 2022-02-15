@@ -17,7 +17,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 @Tag("functional")
 class BitcomClientTest {
@@ -138,15 +137,17 @@ class BitcomClientTest {
     @Test
     void withMaxTimePerMessage() throws Exception {
         CompletableFuture<Command> receiveFuture = new CompletableFuture<>();
+        CompletableFuture<NetworkClient> errorFuture = new CompletableFuture<>();
         BitcomClient client = BitcomClient.builder()
                 .withMessageListener(Version.class, (c, p) -> receiveFuture.complete(p.payload().getCommand()))
+                .withMessageTimeoutListener((c, e) -> errorFuture.complete(c))
                 .withMessageTimeout(1)
                 .buildAndConnect();
         Version data = getVersionPayload();
         byte[] msgBytes = serializeMessage(data);
         byte[] incomplete = Arrays.copyOf(msgBytes, msgBytes.length - 1);
         server.send(incomplete);
-        Assertions.assertThrows(TimeoutException.class, () -> receiveFuture.get(400, TimeUnit.MILLISECONDS));
+        Assertions.assertEquals(client, errorFuture.get(500, TimeUnit.MILLISECONDS));
         server.send(msgBytes);
         Assertions.assertEquals(Command.VERSION, receiveFuture.get(500, TimeUnit.MILLISECONDS));
     }
@@ -169,28 +170,47 @@ class BitcomClientTest {
 
     @Test
     void invalidMsgLength() throws Exception {
-        CompletableFuture<Command> receiveFuture = new CompletableFuture<>();
+        CompletableFuture<Payload> errorFuture = new CompletableFuture<>();
+        CompletableFuture<NetworkClient> globalErrorFuture = new CompletableFuture<>();
         BitcomClient client = BitcomClient.builder()
-                .withMessageListener(Version.class, (c, p) -> receiveFuture.complete(p.payload().getCommand()))
+                .withMessageMalformedListener((c, e) -> errorFuture.complete(e.getMalformedMessage().payload()))
+                .withGlobalErrorListener((c, e) -> globalErrorFuture.complete(c))
                 .buildAndConnect();
         Version data = getVersionPayload();
         byte[] bytes = serializeMessage(data);
         bytes[19] = 0x01;
         server.send(bytes);
-        Assertions.assertThrows(TimeoutException.class, () -> receiveFuture.get(400, TimeUnit.MILLISECONDS));
+        Assertions.assertEquals(data, errorFuture.get(500, TimeUnit.MILLISECONDS));
+        Assertions.assertEquals(client, globalErrorFuture.get(500, TimeUnit.MILLISECONDS));
     }
 
     @Test
     void invalidMsgChecksum() throws Exception {
-        CompletableFuture<Command> receiveFuture = new CompletableFuture<>();
+        CompletableFuture<Payload> errorFuture = new CompletableFuture<>();
+        CompletableFuture<NetworkClient> globalErrorFuture = new CompletableFuture<>();
         BitcomClient client = BitcomClient.builder()
-                .withMessageListener(Version.class, (c, p) -> receiveFuture.complete(p.payload().getCommand()))
+                .withMessageMalformedListener((c, e) -> errorFuture.complete(e.getMalformedMessage().payload()))
+                .withGlobalErrorListener((c, e) -> globalErrorFuture.complete(c))
                 .buildAndConnect();
         Version data = getVersionPayload();
         byte[] bytes = serializeMessage(data);
         bytes[23] = 0x01;
         server.send(bytes);
-        Assertions.assertThrows(TimeoutException.class, () -> receiveFuture.get(400, TimeUnit.MILLISECONDS));
+        Assertions.assertEquals(data, errorFuture.get(500, TimeUnit.MILLISECONDS));
+        Assertions.assertEquals(client, globalErrorFuture.get(500, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    void invalidCommand() throws Exception {
+        CompletableFuture<Exception> globalErrorFuture = new CompletableFuture<>();
+        BitcomClient client = BitcomClient.builder()
+                .withGlobalErrorListener((c, e) -> globalErrorFuture.complete(e))
+                .buildAndConnect();
+        Version data = getVersionPayload();
+        byte[] bytes = serializeMessage(data);
+        bytes[4] = 0x01;
+        server.send(bytes);
+        Assertions.assertNotNull(globalErrorFuture.get(500, TimeUnit.MILLISECONDS));
     }
 
     private <T extends Payload> byte[] serializeMessage(T payload) throws Exception {
