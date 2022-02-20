@@ -1,0 +1,2 @@
+[![pipeline status](https://gitlab.com/org.harrel/bitcom/badges/master/pipeline.svg)](https://gitlab.com/org.harrel/bitcom/-/commits/master)
+[![coverage report](https://gitlab.com/org.harrel/bitcom/badges/master/coverage.svg)](https://gitlab.com/org.harrel/bitcom/-/commits/master)
