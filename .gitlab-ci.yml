@@ -30,4 +30,4 @@ coverage:
   needs: ['test']
   artifacts:
     reports:
-      cobertura: build/cobertura.xml
+      cobertura: 'build/cobertura.xml'
