@@ -25,14 +25,6 @@ test {
     useJUnitPlatform()
 }
 
-jacocoTestReport {
-    dependsOn test
-    reports {
-        xml.required = true
-        html.required = false
-    }
-}
-
 publishing {
     publications {
         bitcom(MavenPublication) {
