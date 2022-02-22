@@ -25,6 +25,13 @@ test {
     useJUnitPlatform()
 }
 
+jacocoTestReport {
+    dependsOn test
+    reports {
+        csv.required = true
+    }
+}
+
 publishing {
     publications {
         bitcom(MavenPublication) {
