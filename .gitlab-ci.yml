@@ -19,5 +19,5 @@ test:
   artifacts:
     paths:
       - 'build/reports/jacoco/test/html/index.html'
-    reports:
-      junit: 'build/test-results/test/**/TEST-*.xml'
+#    reports:
+#      junit: 'build/test-results/test/**/TEST-*.xml'
