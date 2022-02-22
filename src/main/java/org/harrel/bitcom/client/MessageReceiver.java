@@ -3,6 +3,7 @@ package org.harrel.bitcom.client;
 import org.harrel.bitcom.config.NetworkConfiguration;
 import org.harrel.bitcom.config.StandardConfiguration;
 import org.harrel.bitcom.io.TeeInputStream;
+import org.harrel.bitcom.jmx.BitcomInfo;
 import org.harrel.bitcom.model.msg.Header;
 import org.harrel.bitcom.model.msg.Message;
 import org.harrel.bitcom.model.msg.payload.Payload;
@@ -29,14 +30,16 @@ class MessageReceiver implements AutoCloseable {
     private final Validator validator = new Validator();
     private final InputStream in;
     private final Listeners listeners;
+    private final BitcomInfo statMBean;
 
     private final Thread listeningThread;
     private final ByteBuffer buffer = ByteBuffer.allocate(1024);
     private final List<byte[]> magicValues;
 
-    MessageReceiver(InputStream in, NetworkConfiguration netConfig, Listeners listeners) {
+    MessageReceiver(InputStream in, NetworkConfiguration netConfig, Listeners listeners, BitcomInfo statMBean) {
         this.in = in;
         this.listeners = listeners;
+        this.statMBean = statMBean;
         this.magicValues = initMagicValues(netConfig);
         this.listeningThread = new Thread(this::readLoop, getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()) + ":listening-thread");
         this.listeningThread.start();
@@ -81,6 +84,7 @@ class MessageReceiver implements AutoCloseable {
 
             Message<Payload> msg = new Message<>(header, payload);
             validator.assertMessageIntegrity(msg, teeOutput.toByteArray());
+            statMBean.msgReceived();
             listeners.notify(msg);
 
         } catch (SocketTimeoutException e) {

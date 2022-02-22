@@ -2,6 +2,8 @@ package org.harrel.bitcom.client;
 
 import org.harrel.bitcom.config.NetworkConfiguration;
 import org.harrel.bitcom.config.StandardConfiguration;
+import org.harrel.bitcom.jmx.BitcomInfo;
+import org.harrel.bitcom.jmx.JmxSupport;
 import org.harrel.bitcom.model.msg.Message;
 import org.harrel.bitcom.model.msg.payload.Payload;
 import org.slf4j.Logger;
@@ -12,6 +14,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 
 public class BitcomClient implements NetworkClient {
@@ -19,6 +22,7 @@ public class BitcomClient implements NetworkClient {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final InetAddress address;
     private final NetworkConfiguration netConfig;
+    private final BitcomInfo statMBean;
 
     private final Socket socket;
     private final MessageSender sender;
@@ -29,15 +33,17 @@ public class BitcomClient implements NetworkClient {
     }
 
     private BitcomClient(InetAddress address, NetworkConfiguration netConfig,
-                         Listeners.Builder listenersBuilder, int messageTimeout) throws IOException {
+                         Listeners.Builder listenersBuilder, int messageTimeout,
+                         boolean jmxEnabled) throws IOException {
         this.address = address;
         this.netConfig = netConfig;
+        this.statMBean = jmxEnabled ? JmxSupport.registeredMBean(this) : JmxSupport.detachedMBean();
 
         listenersBuilder.withTarget(this);
         this.socket = new Socket(address, netConfig.getPort());
         socket.setSoTimeout(messageTimeout);
-        this.sender = new MessageSender(socket.getOutputStream(), netConfig);
-        this.receiver = new MessageReceiver(socket.getInputStream(), netConfig, listenersBuilder.build());
+        this.sender = new MessageSender(socket.getOutputStream(), netConfig, statMBean);
+        this.receiver = new MessageReceiver(socket.getInputStream(), netConfig, listenersBuilder.build(), statMBean);
         logger.info("Established socket connection to {}:{}", address.getHostAddress(), netConfig.getPort());
     }
 
@@ -59,6 +65,7 @@ public class BitcomClient implements NetworkClient {
         }
         receiver.close();
         socket.close();
+        statMBean.setStopDate(new Date());
     }
 
     public boolean isClosed() {
@@ -79,6 +86,7 @@ public class BitcomClient implements NetworkClient {
         private NetworkConfiguration netConfig = StandardConfiguration.MAIN;
         private final Listeners.Builder listenersBuilder = Listeners.builder();
         private int messageTimeout;
+        private boolean jmx;
 
         public Builder withAddress(String address) throws UnknownHostException {
             return withAddress(InetAddress.getByName(address));
@@ -124,11 +132,16 @@ public class BitcomClient implements NetworkClient {
             return this;
         }
 
+        public Builder withJmxEnabled(boolean jmx) {
+            this.jmx = jmx;
+            return this;
+        }
+
         public BitcomClient buildAndConnect() throws IOException {
             if (address == null) {
                 address = InetAddress.getLocalHost();
             }
-            return new BitcomClient(address, netConfig, listenersBuilder, messageTimeout);
+            return new BitcomClient(address, netConfig, listenersBuilder, messageTimeout, jmx);
         }
     }
 }

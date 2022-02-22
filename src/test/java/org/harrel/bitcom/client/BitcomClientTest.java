@@ -2,6 +2,8 @@ package org.harrel.bitcom.client;
 
 import org.harrel.bitcom.config.NetworkConfiguration;
 import org.harrel.bitcom.config.StandardConfiguration;
+import org.harrel.bitcom.jmx.BitcomInfo;
+import org.harrel.bitcom.jmx.JmxSupport;
 import org.harrel.bitcom.model.NetworkAddress;
 import org.harrel.bitcom.model.Service;
 import org.harrel.bitcom.model.msg.payload.Command;
@@ -215,7 +217,7 @@ class BitcomClientTest {
 
     private <T extends Payload> byte[] serializeMessage(T payload) throws Exception {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        MessageSender sender = new MessageSender(bout, StandardConfiguration.MAIN);
+        MessageSender sender = new MessageSender(bout, StandardConfiguration.MAIN, JmxSupport.detachedMBean());
         sender.sendMessage(payload).get();
         return bout.toByteArray();
     }

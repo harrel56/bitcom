@@ -1,6 +1,7 @@
 package org.harrel.bitcom.client;
 
 import org.harrel.bitcom.config.NetworkConfiguration;
+import org.harrel.bitcom.jmx.BitcomInfo;
 import org.harrel.bitcom.model.msg.Header;
 import org.harrel.bitcom.model.msg.Message;
 import org.harrel.bitcom.model.msg.payload.Payload;
@@ -22,10 +23,12 @@ class MessageSender {
     private final SerializerFactory serializerFactory = new SerializerFactory();
     private final OutputStream out;
     private final NetworkConfiguration netConfig;
+    private final BitcomInfo statMBean;
 
-    MessageSender(OutputStream out, NetworkConfiguration netConfig) {
+    MessageSender(OutputStream out, NetworkConfiguration netConfig, BitcomInfo statMBean) {
         this.out = out;
         this.netConfig = netConfig;
+        this.statMBean = statMBean;
     }
 
     <T extends Payload> CompletableFuture<Message<T>> sendMessage(T payload) {
@@ -51,6 +54,7 @@ class MessageSender {
 
         byteOut.write(payloadBytes);
         out.write(byteOut.toByteArray());
+        statMBean.msgSent();
         logger.info("Sent message of type={}", payload.getCommand());
         return new Message<>(header, payload);
     }
