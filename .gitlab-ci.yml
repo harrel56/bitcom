@@ -16,7 +16,7 @@ test:
   stage: test
   script:
     - ./gradlew test jacocoTestReport --stacktrace
-    - cat build/reports/jacoco/test/html/index.html
+    - cat build/reports/jacoco/test/html/index.html | grep -o 'Total.*?[0-9]{1,3}%'
   coverage: '/Total.*?([0-9]{1,3})%/'
   artifacts:
     paths:
