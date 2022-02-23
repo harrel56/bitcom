@@ -27,6 +27,8 @@ javadoc:
   stage: deploy
   script:
     - ./gradlew javadoc
+    - mkdir public
+    - cp -r build/docs/javadoc public
   artifacts:
     paths:
-      - 'build/docs/javadoc'
+      - 'public'
