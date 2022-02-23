@@ -3,6 +3,7 @@ image: amazoncorretto:17.0.2-alpine
 stages:
   - build
   - test
+  - deploy
 
 build:
   stage: build
@@ -21,3 +22,11 @@ test:
   artifacts:
     reports:
       junit: 'build/test-results/test/**/TEST-*.xml'
+
+javadoc:
+  stage: deploy
+  script:
+    - ./gradlew javadoc
+  artifacts:
+    paths:
+      - 'build/docs/javadoc'
