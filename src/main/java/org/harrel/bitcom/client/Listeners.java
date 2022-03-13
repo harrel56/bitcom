@@ -8,10 +8,10 @@ import org.slf4j.LoggerFactory;
 
 import java.net.SocketTimeoutException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
-class Listeners {
+class Listeners implements AutoCloseable {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final NetworkClient target;
@@ -20,7 +20,7 @@ class Listeners {
     private final List<ErrorListener<Exception>> globalErrorListeners;
     private final List<ErrorListener<SocketTimeoutException>> msgTimeoutListeners;
     private final List<ErrorListener<MessageIntegrityException>> msgMalformedListeners;
-    private final ThreadPoolExecutor pool;
+    private final ExecutorService pool;
 
     static Builder builder() {
         return new Builder();
@@ -38,7 +38,12 @@ class Listeners {
         this.globalErrorListeners = globalErrorListeners;
         this.msgTimeoutListeners = msgTimeoutListeners;
         this.msgMalformedListeners = msgMalformedListeners;
-        this.pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+        this.pool = Executors.newSingleThreadExecutor();
+    }
+
+    @Override
+    public void close() {
+        pool.shutdownNow();
     }
 
     void notify(Message<Payload> msg) {

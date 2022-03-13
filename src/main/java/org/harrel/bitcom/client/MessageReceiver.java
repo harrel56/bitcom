@@ -46,8 +46,9 @@ class MessageReceiver implements AutoCloseable {
     }
 
     @Override
-    public synchronized void close() {
+    public void close() {
         listeningThread.interrupt();
+        listeners.close();
     }
 
     private List<byte[]> initMagicValues(NetworkConfiguration netConfig) {
@@ -133,11 +134,7 @@ class MessageReceiver implements AutoCloseable {
     }
 
     private boolean isMagicValue(byte[] data) {
-        for (byte[] magic : magicValues) {
-            if (Arrays.mismatch(data, magic) == -1) {
-                return true;
-            }
-        }
-        return false;
+        return magicValues.stream()
+                .anyMatch(magic -> Arrays.mismatch(data, magic) == -1);
     }
 }

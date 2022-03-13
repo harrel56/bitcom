@@ -12,22 +12,22 @@ Java library for bitcoin P2P network communication. Implemented with plain java.
 
 ## Usage
 Connect to specific host:
-```
+```java
 BitcomClient client = BitcomClient.builder()
     .withAddress("example.com") // the only required value
     .buildAndConnect();
 ```
 Socket connection will be maintained until explicitly closed:
-```
+```java
 client.close();
 ```
 Sending message is non-blocking, upon successful send, returned future will be resolved (e.g. message header can be accessed then):
-```
+```java
 CompletableFuture<Message<Ping>> future = client.sendMessage(new Ping(nonce));
 Header header = future.get().header();
 ```
 Available options on client builder:
-```
+```java
 BitcomClient client = BitcomClient.builder()
     .withAddress("example.com")
      // standard network configs are found in org.harrel.bitcom.config.StandardConfiguration
