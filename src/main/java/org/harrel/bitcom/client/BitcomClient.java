@@ -9,6 +9,8 @@ import org.harrel.bitcom.model.msg.payload.Payload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -42,8 +44,8 @@ public class BitcomClient implements NetworkClient {
         listenersBuilder.withTarget(this);
         this.socket = new Socket(address, netConfig.getPort());
         socket.setSoTimeout(messageTimeout);
-        this.sender = new MessageSender(socket.getOutputStream(), netConfig, statMBean);
-        this.receiver = new MessageReceiver(socket.getInputStream(), netConfig, listenersBuilder.build(), statMBean);
+        this.sender = new MessageSender(new BufferedOutputStream(socket.getOutputStream()), netConfig, statMBean);
+        this.receiver = new MessageReceiver(new BufferedInputStream(socket.getInputStream()), netConfig, listenersBuilder.build(), statMBean);
         logger.info("Established socket connection to {}:{}", address.getHostAddress(), netConfig.getPort());
     }
 

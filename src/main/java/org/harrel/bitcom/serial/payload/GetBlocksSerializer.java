@@ -1,6 +1,7 @@
 package org.harrel.bitcom.serial.payload;
 
 import org.harrel.bitcom.model.Hash;
+import org.harrel.bitcom.model.msg.payload.Addr;
 import org.harrel.bitcom.model.msg.payload.GetBlocks;
 
 import java.io.IOException;
@@ -25,6 +26,9 @@ public class GetBlocksSerializer extends PayloadSerializer<GetBlocks> {
     public GetBlocks deserialize(InputStream in) throws IOException {
         int version = readInt32LE(in);
         int count = (int) readVarInt(in);
+        if(count > GetBlocks.SIZE_RANGE.max()) {
+            throw new IllegalArgumentException("GetBlocks message must contain valid number of block hashes " + GetBlocks.SIZE_RANGE);
+        }
         var hashes = new ArrayList<Hash>(count);
         for (int i = 0; i < count; i++) {
             hashes.add(readHash(in));

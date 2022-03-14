@@ -29,8 +29,11 @@ public class InventorySerializer<T extends InventoryPayload> extends PayloadSeri
 
     @Override
     public T deserialize(InputStream in) throws IOException {
-        long count = readVarInt(in);
-        var inventory = new ArrayList<InventoryVector>((int) count);
+        int count = (int) readVarInt(in);
+        if (count > InventoryPayload.SIZE_RANGE.max()) {
+            throw new IllegalArgumentException("Message must contain valid number of inventory vectors " + InventoryPayload.SIZE_RANGE);
+        }
+        var inventory = new ArrayList<InventoryVector>(count);
         for (long i = 0; i < count; i++) {
             inventory.add(readInventoryVector(in));
         }

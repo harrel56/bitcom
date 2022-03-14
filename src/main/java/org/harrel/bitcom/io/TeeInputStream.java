@@ -22,69 +22,9 @@ public class TeeInputStream extends FilterInputStream {
     }
 
     @Override
-    public byte[] readNBytes(int len) throws IOException {
-        byte[] bytes = super.readNBytes(len);
-        teeOutput.write(bytes);
-        return bytes;
-    }
-
-    @Override
-    public int read(byte[] b) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        return super.read(b, off, len);
-    }
-
-    @Override
-    public long skip(long n) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int available() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void close() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public synchronized void mark(int readlimit) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public synchronized void reset() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean markSupported() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public byte[] readAllBytes() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int readNBytes(byte[] b, int off, int len) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void skipNBytes(long n) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public long transferTo(OutputStream out) {
-        throw new UnsupportedOperationException();
+        int read = super.read(b, off, len);
+        teeOutput.write(b, off, read);
+        return read;
     }
 }

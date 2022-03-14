@@ -22,6 +22,9 @@ public class AddrSerializer extends PayloadSerializer<Addr> {
     @Override
     public Addr deserialize(InputStream in) throws IOException {
         int count = (int) readVarInt(in);
+        if(count > Addr.SIZE_RANGE.max()) {
+            throw new IllegalArgumentException("Addr message must contain valid number of addresses " + Addr.SIZE_RANGE);
+        }
         var addresses = new ArrayList<NetworkAddress>(count);
         for (int i = 0; i < count; i++) {
             addresses.add(readNetworkAddress(in));
